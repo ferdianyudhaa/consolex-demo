@@ -1,1 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Tugas Web - Ferdian</title>
+    <style>
+        /* Desain Background & Font */
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
 
+        /* Kotak Utama (Glassmorphism) */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nim {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        /* Gaya Tombol List */
+        .exercise-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.03);
+            border-color: #00d2ff;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
+        }
+
+        .btn-icon {
+            font-size: 18px;
+            color: #00d2ff;
+        }
+
+        footer {
+            margin-top: 30px;
+            font-size: 11px;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Web Projects</h1>
+        <div class="nim">FERDIAN YUDHA RANADYA | 20225308</div>
+
+        <div class="exercise-list">
+            <a href="26b39.html" class="btn">
+                <span>Exercise 1</span>
+                <span class="btn-icon">➜</span>
+            </a>
+
+            <a href="26b41.html" class="btn">
+                <span>Exercise 2</span>
+                <span class="btn-icon">➜</span>
+            </a>
+
+            <a href="26b43.html" class="btn">
+                <span>Exercise 3</span>
+                <span class="btn-icon">➜</span>
+            </a>
+        </div>
+
+        <footer>Institut Teknologi Bandung</footer>
+    </div>
+
+</body>
+</html>

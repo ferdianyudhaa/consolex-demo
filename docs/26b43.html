@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Simulation Step Tracker</title>
+</head>
+<body>
+
+  <div id="container"></div>
+
+  <script src="26b39.js"></script>
+  <script src="26b41.js"></script>
+  <script src="26b43.js"></script>
+  
+  <script>
+    // 1. Menyiapkan Antarmuka (UI)
+    const cnt = getContainer("container", "550px"); // Sedikit diperlebar
+    const inTxa = createTextarea("queue-input");
+    const outTxa = createTextarea("log-output");
+    const btnDiv = createDiv("button-container");
+    
+    // 2. Membuat Tombol dengan Tema Simulasi
+    const clrInBtn = createButton("clr-in", "Clear Queue");
+    const clrOutBtn = createButton("clr-out", "Clear Log");
+    const loadBtn = createButton("load-btn", "Load Steps");
+    const copyBtn = createButton("copy-btn", "Copy All");
+    const runBtn = createButton("run-btn", "Execute Step"); // Menggantikan Mark Done
+
+    // 3. Menyusun Posisi di Layar
+    cnt.append(inTxa);
+    cnt.append(btnDiv);
+    cnt.append(outTxa);
+    
+    btnDiv.append(clrInBtn);
+    btnDiv.append(clrOutBtn);
+    btnDiv.append(loadBtn);
+    btnDiv.append(copyBtn);
+    btnDiv.append(runBtn);
+
+    // Mengatur lebar kolom (Input: 3, Tombol: 2, Output: 4 agar lebih lega)
+    changeElementsFlex(["queue-input", "3"], ["button-container", "2"], ["log-output", "4"]);
+
+    // Mengarahkan output consolex ke kotak kanan
+    consolex.setOutput(outTxa);
+
+    // --- LOGIKA PROGRAM ---
+
+    // Tombol Load: Mengisi antrean parameter simulasi
+    loadBtn.addEventListener("click", () => {
+      inTxa.value = "Init Random Seed";
+      inTxa.value += "\nGenerate Particles";
+      inTxa.value += "\nCalculate Scattering";
+      inTxa.value += "\nRecord Dose Distribution";
+      inTxa.value += "\nExport to CSV";
+    });
+
+    // Tombol Execute Step: Memindahkan baris PALING ATAS ke kanan
+    runBtn.addEventListener("click", () => {
+      let lines = inTxa.value.split("\n");
+      
+      if (lines.length > 0 && lines[0] !== "") {
+        // Menggunakan shift() untuk mengambil urutan dari atas
+        let currentStep = lines.shift(); 
+        
+        // Menambahkan simbol indikator berhasil diproses
+        consolex.log("▶ [SUCCESS] " + currentStep); 
+        
+        // Memperbarui sisa teks di kotak kiri
+        inTxa.value = lines.join("\n");
+      }
+    });
+
+    // Tombol Copy & Clear
+    copyBtn.addEventListener("click", () => { copyTextareaFromTo("queue-input", "log-output"); });
+    clrInBtn.addEventListener("click", () => { clearTextarea("queue-input"); });
+    clrOutBtn.addEventListener("click", () => { clearTextarea("log-output"); });
+
+  </script>
+
+</body>
+</html>
