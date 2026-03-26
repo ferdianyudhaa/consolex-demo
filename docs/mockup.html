@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Radioisotope Decay Simulator</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f8f9fa; color: #333; line-height: 1.6; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #2c3e50; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        .box { padding: 15px; border: 1px solid #dee2e6; border-radius: 8px; background-color: #ffffff; }
+        label { font-weight: bold; margin-top: 10px; display: block; font-size: 14px; }
+        select, input, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ced4da; border-radius: 5px; box-sizing: border-box; }
+        button { padding: 10px 15px; margin: 5px 0; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s; }
+        button:hover { background-color: #2980b9; }
+        .btn-success { background-color: #27ae60; }
+        .btn-success:hover { background-color: #219653; }
+        canvas { background-color: #1e272e; border-radius: 5px; width: 100%; height: 300px; margin-top: 10px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .legend { display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px; font-weight: bold; }
+        .text-blue { color: #00a8ff; } .text-red { color: #e84118; }
+        .desc { background-color: #eaf2f8; padding: 15px; border-left: 5px solid #3498db; margin-top: 20px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 style="text-align: center;">Clinical Dosimetry & Decay Mockup</h1>
+    
+    <div class="grid">
+        <div class="box">
+            <h3>1. Input Parameter (15)</h3>
+            
+            <label>Pilih Radioisotop (10 Variasi Peluruhan):</label>
+            <select id="isotopeSelect">
+                <option value="" disabled selected>-- Pilih Unsur --</option>
+                <option value="Mo99">1. Molybdenum-99 (Berantai/Successive ke Tc-99m)</option>
+                <option value="Sr90">2. Strontium-90 (Berantai/Successive ke Y-90)</option>
+                <option value="Bi212">3. Bismuth-212 (Bercabang/Branching α & β-)</option>
+                <option value="Cf252">4. Californium-252 (Spontaneous Fission / Neutron)</option>
+                <option value="Co53m">5. Cobalt-53m (Emisi Proton Langka)</option>
+                <option value="Ra226">6. Radium-226 (Peluruhan Alpha α)</option>
+                <option value="F18">7. Fluorine-18 (Emisi Positron β+)</option>
+                <option value="I125">8. Iodine-125 (Electron Capture)</option>
+                <option value="Tc99m">9. Technetium-99m (Transisi Isomerik / Gamma γ)</option>
+                <option value="H3">10. Tritium (Peluruhan Beta Minus β-)</option>
+            </select>
+
+            <label>Aktivitas Awal (mCi):</label>
+            <input type="number" id="inputActivity" value="10" placeholder="Misal: 10">
+
+            <label>Waktu Simulasi (Jam):</label>
+            <input type="number" id="inputTime" value="100" placeholder="Misal: 100">
+
+            <label>Catatan Fisikawan Medis (Textarea):</label>
+            <textarea id="medNotes" rows="2" placeholder="Masukkan catatan klinis..."></textarea>
+        </div>
+
+        <div class="box">
+            <h3>2. Kontrol Komputasi (15)</h3>
+            <button onclick="loadData()">Langkah 1: Ekstrak Parameter Unsur</button>
+            <button onclick="calculateDecay()">Langkah 2: Proses Persamaan Numerik</button>
+            <button class="btn-success" onclick="startAnimation()">Langkah 3: Visualisasi Animasi Real-Time</button>
+
+            <h3 style="margin-top: 20px;">3. Hasil Simulasi (15)</h3>
+            <textarea id="outputLog" rows="5" readonly placeholder="Log reaksi kimia dan hasil kalkulasi akan muncul di sini..."></textarea>
+        </div>
+    </div>
+
+    <div class="box" style="margin-top: 20px;">
+        <h3>Grafik Peluruhan Real-Time</h3>
+        <div class="legend">
+            <span class="text-blue">--- Garis Biru: Unsur Induk (Parent)</span>
+            <span class="text-red">--- Garis Merah: Unsur Anak (Daughter)</span>
+        </div>
+        <canvas id="decayCanvas" width="800" height="300"></canvas>
+    </div>
+
+    <div class="desc">
+        <h3>Deskripsi Aplikasi</h3>
+        <p>Aplikasi ini adalah mockup untuk mensimulasikan peluruhan radioaktif dari berbagai unsur yang sering digunakan dalam Fisika Medis dan Fisika Inti. Pengguna dapat memilih jenis isotop, memasukkan aktivitas awal, dan menentukan durasi simulasi. Melalui tiga tombol kontrol, aplikasi akan mengekstrak data, menghitung prediksi unsur turunan (daughter isotope), dan memvisualisasikan grafik kurva peluruhannya secara real-time di atas canvas.</p>
+        
+        <h3>Konsep Numerik & Algoritma</h3>
+        <p>Aplikasi ini mengimplementasikan dua pendekatan matematis. Untuk peluruhan tunggal, digunakan persamaan eksponensial standar: $$N(t) = N_0 \cdot e^{-\lambda t}$$. Namun, untuk unsur dengan peluruhan berantai (Successive Decay) seperti Mo-99 menjadi Tc-99m, algoritma menggunakan <strong>Persamaan Bateman</strong> untuk menghitung aktivitas unsur anak: $$N_2(t) = \frac{\lambda_1}{\lambda_2 - \lambda_1} N_0 (e^{-\lambda_1 t} - e^{-\lambda_2 t})$$. Pada pengembangan fungsional selanjutnya, kalkulasi kontinu ini akan didiskritisasi menggunakan <strong>Metode Euler</strong> ($$N_{i+1} = N_i - \lambda N_i \Delta t$$) untuk mengakomodasi variabel laju eliminasi biologis pasien secara dinamis.</p>
+    </div>
+</div>
+
+<script>
+    // Database 10 Isotop
+    const isotopes = {
+        "Mo99": { name: "Molybdenum-99", type: "Berantai (β- -> γ)", t1: 66, t2: 6.01, eq: "Mo-99 -> Tc-99m -> Tc-99", isChain: true },
+        "Sr90": { name: "Strontium-90", type: "Berantai (β- -> β-)", t1: 252288, t2: 64, eq: "Sr-90 -> Y-90 -> Zr-90", isChain: true },
+        "Bi212": { name: "Bismuth-212", type: "Bercabang (α / β-)", t1: 1.01, eq: "Bi-212 -> Po-212 (64%) ATAU Tl-208 (36%)", isChain: false },
+        "Cf252": { name: "Californium-252", type: "Fisi Spontan (Neutron)", t1: 23150, eq: "Cf-252 -> Fission Fragments + Neutrons", isChain: false },
+        "Co53m": { name: "Cobalt-53m", type: "Emisi Proton", t1: 0.000068, eq: "Co-53m -> Fe-52 + Proton", isChain: false },
+        "Ra226": { name: "Radium-226", type: "Emisi Alpha (α)", t1: 14016000, eq: "Ra-226 -> Rn-222 + He-4", isChain: false },
+        "F18":  { name: "Fluorine-18", type: "Emisi Positron (β+)", t1: 1.83, eq: "F-18 -> O-18 + e+", isChain: false },
+        "I125": { name: "Iodine-125", type: "Electron Capture (EC)", t1: 1425.6, eq: "I-125 + e- -> Te-125", isChain: false },
+        "Tc99m":{ name: "Technetium-99m", type: "Transisi Isomerik (γ)", t1: 6.01, eq: "Tc-99m -> Tc-99 + Sinar Gamma", isChain: false },
+        "H3":   { name: "Tritium", type: "Emisi Beta Minus (β-)", t1: 107935, eq: "H-3 -> He-3 + e- + antineutrino", isChain: false }
+    };
+
+    let currentData = null;
+    let animationId;
+
+    function loadData() {
+        const key = document.getElementById("isotopeSelect").value;
+        if(!key) return alert("Pilih unsur terlebih dahulu!");
+        currentData = isotopes[key];
+        document.getElementById("outputLog").value = `[Data Diekstrak]\nUnsur: ${currentData.name}\nJenis Reaksi: ${currentData.type}\nPersamaan: ${currentData.eq}\nMenunggu kalkulasi...`;
+    }
+
+    function calculateDecay() {
+        if(!currentData) return alert("Lakukan Langkah 1 terlebih dahulu!");
+        let a0 = parseFloat(document.getElementById("inputActivity").value);
+        let time = parseFloat(document.getElementById("inputTime").value);
+        
+        let lambda1 = Math.LN2 / currentData.t1;
+        let parentFinal = a0 * Math.exp(-lambda1 * time);
+        
+        let log = document.getElementById("outputLog").value;
+        log = log.split("Menunggu kalkulasi...")[0]; // bersihkan teks tunggu
+        log += `\n[Hasil Kalkulasi T=${time} Jam]\nKonstanta Peluruhan Induk (λ): ${lambda1.toExponential(3)} /jam\nSisa Unsur Induk: ${parentFinal.toFixed(4)} mCi`;
+        
+        if(currentData.isChain) {
+            let lambda2 = Math.LN2 / currentData.t2;
+            let daughterFinal = (lambda1 / (lambda2 - lambda1)) * a0 * (Math.exp(-lambda1 * time) - Math.exp(-lambda2 * time));
+            log += `\nAktivitas Unsur Anak: ${daughterFinal.toFixed(4)} mCi`;
+        }
+        document.getElementById("outputLog").value = log;
+    }
+
+    function startAnimation() {
+        if(!currentData) return alert("Lakukan komputasi terlebih dahulu!");
+        cancelAnimationFrame(animationId); // Reset animasi sebelumnya
+        
+        const canvas = document.getElementById("decayCanvas");
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        let a0 = parseFloat(document.getElementById("inputActivity").value);
+        let maxTime = parseFloat(document.getElementById("inputTime").value);
+        let lambda1 = Math.LN2 / currentData.t1;
+        let lambda2 = currentData.isChain ? Math.LN2 / currentData.t2 : 0;
+        
+        let t = 0;
+        let speed = maxTime / 200; // Kecepatan animasi
+        
+        ctx.lineWidth = 3;
+        
+        function draw() {
+            if (t > maxTime) return;
+            
+            let x = (t / maxTime) * canvas.width;
+            
+            // Hitung Parent
+            let yParent = a0 * Math.exp(-lambda1 * t);
+            let canvasYParent = canvas.height - ((yParent / a0) * (canvas.height - 20)) - 10;
+            
+            ctx.fillStyle = "#00a8ff";
+            ctx.fillRect(x, canvasYParent, 2, 2); // Gambar Parent (Biru)
+            
+            // Hitung Daughter (Jika berantai)
+            if(currentData.isChain) {
+                let yDaughter = (lambda1 / (lambda2 - lambda1)) * a0 * (Math.exp(-lambda1 * t) - Math.exp(-lambda2 * t));
+                let canvasYDaughter = canvas.height - ((yDaughter / a0) * (canvas.height - 20)) - 10;
+                
+                ctx.fillStyle = "#e84118";
+                ctx.fillRect(x, canvasYDaughter, 2, 2); // Gambar Daughter (Merah)
+            }
+            
+            t += speed;
+            animationId = requestAnimationFrame(draw);
+        }
+        draw();
+    }
+</script>
+
+</body>
+</html>
