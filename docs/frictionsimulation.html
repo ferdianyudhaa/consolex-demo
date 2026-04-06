@@ -3,79 +3,17 @@
 <head>
     <title>Simulasi Pra UTS - Ferdian</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #fff;
-            margin: 20px;
-        }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .panel {
-            border: 1px solid #ccc;
-            padding: 10px;
-            display: flex;
-            gap: 10px;
-            background: #fff;
-            height: 350px;
-        }
-        /* Textarea Kiri (Parameter) */
-        textarea.ta-left {
-            width: 140px;
-            height: 330px;
-            resize: none;
-            font-family: monospace;
-            font-size: 13px;
-            border: 1px solid #999;
-            padding: 5px;
-            box-sizing: border-box;
-        }
-        /* Textarea Kanan (Khusus Panel 1) */
-        textarea.ta-right {
-            width: 270px;
-            height: 330px;
-            resize: none;
-            font-family: monospace;
-            font-size: 13px;
-            border: 1px solid #ccc;
-            padding: 5px;
-            box-sizing: border-box;
-            background-color: #fafafa;
-        }
-        .buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 80px;
-        }
-        button {
-            padding: 5px;
-            font-family: Arial, sans-serif;
-            font-size: 13px;
-            background-color: #f0f0f0;
-            border: 1px solid #999;
-            cursor: pointer;
-        }
-        button:disabled {
-            color: #aaa;
-            border: 1px solid #ccc;
-            background-color: #f9f9f9;
-            cursor: not-allowed;
-        }
-        button.active-border {
-            border: 2px solid #000;
-            font-weight: bold;
-        }
-        .canvas-container {
-            width: 270px;
-            height: 330px;
-            border: 1px solid #ccc;
-        }
-        canvas {
-            display: block;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #fff; }
+        .container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .panel { border: 1px solid #ccc; padding: 10px; display: flex; gap: 10px; background: #fff; height: 350px; }
+        textarea.ta-left { width: 140px; height: 330px; resize: none; font-family: monospace; font-size: 13px; border: 1px solid #999; padding: 5px; }
+        textarea.ta-right { width: 270px; height: 330px; resize: none; font-family: monospace; font-size: 13px; border: 1px solid #ccc; padding: 5px; background-color: #fafafa; }
+        .buttons { display: flex; flex-direction: column; gap: 8px; width: 85px; }
+        button { padding: 5px; font-size: 12px; background-color: #f0f0f0; border: 1px solid #999; cursor: pointer; }
+        button:disabled { color: #aaa; border: 1px solid #ccc; background-color: #f9f9f9; cursor: not-allowed; }
+        button.active-border { border: 2px solid #000; font-weight: bold; }
+        .canvas-container { width: 270px; height: 330px; border: 1px solid #ccc; }
+        canvas { display: block; }
     </style>
 </head>
 <body>
@@ -128,160 +66,130 @@
 
     <script>
         let cols = 9, rows = 11, umin = 0.2, umax = 0.7, unum = 11;
-        let gridData = [];
-        let colors = [];
-        let startPt = {x: 4, y: 5};
-        let endPt = {x: 6, y: 2};
+        let gridData = [], colors = [], startPt = {x: 4, y: 5}, endPt = {x: 6, y: 2};
         const cellSize = 30;
 
         function setBtn(id, enabled, highlight = false) {
             const btn = document.getElementById(id);
+            if (!btn) return;
             btn.disabled = !enabled;
-            if(highlight) btn.classList.add('active-border');
-            else btn.classList.remove('active-border');
+            if(highlight) btn.style.border = "2px solid black";
+            else btn.style.border = "1px solid #999";
         }
 
-        function wipe(panel) {
-            if (panel === 1) {
-                document.getElementById('ta1').value = '';
-                document.getElementById('out1').value = '';
-                setBtn('data-1', true); setBtn('read-1', false); setBtn('exec-1', false);
-            } else {
-                document.getElementById('ta' + panel).value = '';
-                const ctx = document.getElementById('cv' + panel).getContext('2d');
-                ctx.clearRect(0, 0, 270, 330);
-                
-                if(panel === 2) {
-                    setBtn('data-2', !document.getElementById('read-1').disabled); 
-                    setBtn('read-2', false); setBtn('exec-2', false);
-                } else if(panel === 3) {
-                    setBtn('data-3', !document.getElementById('read-2').disabled); 
-                    setBtn('read-3', false); setBtn('exec-3', false);
-                } else if(panel === 4) {
-                    setBtn('data-4', !document.getElementById('read-3').disabled); 
-                    setBtn('read-4', false); setBtn('exec-4', false);
-                }
-            }
+        function wipe(p) {
+            if(p===1){ document.getElementById('ta1').value=''; document.getElementById('out1').value=''; setBtn('read-1',false); setBtn('exec-1',false); }
+            else { document.getElementById('ta'+p).value=''; let ctx=document.getElementById('cv'+p).getContext('2d'); ctx.clearRect(0,0,270,330); setBtn('read-'+p,false); setBtn('exec-'+p,false); }
         }
 
+        // PANEL 1
         function data1() {
             document.getElementById('ta1').value = "COLS 9\nROWS 11\nUMIN 0.20\nUMAX 0.70\nUNUM 11\nSEPC ;";
             setBtn('data-1', true, true);
             setBtn('read-1', true);
         }
-
         function read1() {
             setBtn('data-1', true, false);
             setBtn('read-1', true, true);
             setBtn('exec-1', true);
-            setBtn('data-2', true); 
+            setBtn('data-2', true);
         }
-
         function exec1() {
-            setBtn('read-1', true, false);
             setBtn('exec-1', true, true);
-            
-            let dataStr = "";
-            gridData = [];
-            for(let r=0; r<rows; r++) {
-                let rowVals = [];
-                for(let c=0; c<cols; c++) {
-                    let val = (Math.random() * (umax - umin) + umin).toFixed(2);
-                    rowVals.push(parseFloat(val));
-                    dataStr += val.substring(1) + (c === cols-1 ? "" : ";");
+            let ds = ""; gridData = [];
+            for(let r=0; r<rows; r++){
+                let rv = [];
+                for(let c=0; c<cols; c++){
+                    let v = (Math.random()*(umax-umin)+umin).toFixed(2);
+                    rv.push(parseFloat(v));
+                    ds += v.substring(1) + (c===cols-1?"":";");
                 }
-                gridData.push(rowVals);
-                dataStr += (r === rows-1 ? "" : "\n");
+                gridData.push(rv);
+                ds += (r===rows-1?"":"\n");
             }
-            // Kirim angka matriks ke kotak teks sebelah kanan (out1)
-            document.getElementById('out1').value = dataStr;
+            document.getElementById('out1').value = ds;
         }
 
+        // PANEL 2
         function data2() {
             document.getElementById('ta2').value = "CNUM 11\nCL00 #522\nCL01 #622\nCL02 #722\nCL03 #822\nCL04 #922\nCL05 #a22\nCL06 #b22\nCL07 #c22\nCL08 #d22\nCL09 #e22\nCL10 #f22";
-            setBtn('data-2', true, true);
-            setBtn('read-2', true);
+            setBtn('data-2', true, true); setBtn('read-2', true);
         }
-
         function read2() {
-            setBtn('data-2', true, false);
-            setBtn('read-2', true, true);
-            setBtn('exec-2', true);
-            setBtn('data-3', true);
-            
-            const lines = document.getElementById('ta2').value.split('\n');
+            setBtn('read-2', true, true); setBtn('exec-2', true); setBtn('data-3', true);
             colors = [];
-            lines.forEach(line => {
-                if(line.startsWith('CL')) colors.push(line.split(' ')[1]);
-            });
+            document.getElementById('ta2').value.split('\n').forEach(l => { if(l.startsWith('CL')) colors.push(l.split(' ')[1]); });
         }
+        function exec2() { drawHeatmap('cv2'); }
 
-        function exec2() {
-            setBtn('read-2', true, false);
-            setBtn('exec-2', true, true);
-            drawHeatmap('cv2');
-        }
-
+        // PANEL 3
         function data3() {
             document.getElementById('ta3').value = "XMIN 0\nYMIN 0\nXMAX 9\nYMAX 11\nSX 4\nSY 5\nEX 6\nEY 2";
-            setBtn('data-3', true, true);
-            setBtn('read-3', true);
+            setBtn('data-3', true, true); setBtn('read-3', true);
         }
-
-        function read3() {
-            setBtn('data-3', true, false);
-            setBtn('read-3', true, true);
-            setBtn('exec-3', true);
-            setBtn('data-4', true);
-        }
-
+        function read3() { setBtn('read-3', true, true); setBtn('exec-3', true); setBtn('data-4', true); }
         function exec3() {
-            setBtn('read-3', true, false);
-            setBtn('exec-3', true, true);
             drawHeatmap('cv3');
-            
-            const ctx = document.getElementById('cv3').getContext('2d');
-            ctx.fillStyle = '#80ff80'; ctx.fillRect(startPt.x * cellSize, startPt.y * cellSize, cellSize, cellSize);
-            ctx.fillStyle = '#8080ff'; ctx.fillRect(endPt.x * cellSize, endPt.y * cellSize, cellSize, cellSize);
+            let ctx = document.getElementById('cv3').getContext('2d');
+            ctx.fillStyle = '#80ff80'; ctx.fillRect(startPt.x*cellSize, startPt.y*cellSize, cellSize, cellSize);
+            ctx.fillStyle = '#8080ff'; ctx.fillRect(endPt.x*cellSize, endPt.y*cellSize, cellSize, cellSize);
         }
 
+        // PANEL 4
         function data4() {
             document.getElementById('ta4').value = "ALG DIJKSTRA\nCOST MU\nPATH LINE\nCOLOR #FFD700\nWIDTH 3";
-            setBtn('data-4', true, true);
-            setBtn('read-4', true);
+            setBtn('data-4', true, true); setBtn('read-4', true);
         }
-
-        function read4() {
-            setBtn('data-4', true, false);
-            setBtn('read-4', true, true);
-            setBtn('exec-4', true);
-        }
-
+        function read4() { setBtn('read-4', true, true); setBtn('exec-4', true); }
         function exec4() {
-            setBtn('read-4', true, false);
-            setBtn('exec-4', true, true);
-            
             drawHeatmap('cv4');
-            const ctx = document.getElementById('cv4').getContext('2d');
-            ctx.fillStyle = '#80ff80'; ctx.fillRect(startPt.x * cellSize, startPt.y * cellSize, cellSize, cellSize);
-            ctx.fillStyle = '#8080ff'; ctx.fillRect(endPt.x * cellSize, endPt.y * cellSize, cellSize, cellSize);
-
+            let ctx = document.getElementById('cv4').getContext('2d');
+            ctx.fillStyle = '#80ff80'; ctx.fillRect(startPt.x*cellSize, startPt.y*cellSize, cellSize, cellSize);
+            ctx.fillStyle = '#8080ff'; ctx.fillRect(endPt.x*cellSize, endPt.y*cellSize, cellSize, cellSize);
             let path = calculateDijkstra();
-            
             if(path.length > 0) {
-                ctx.beginPath();
-                ctx.strokeStyle = '#FFD700'; 
-                ctx.lineWidth = 3;
-                for (let i = 0; i < path.length; i++) {
-                    let px = (path[i].x * cellSize) + (cellSize / 2);
-                    let py = (path[i].y * cellSize) + (cellSize / 2);
-                    if (i === 0) ctx.moveTo(px, py);
-                    else ctx.lineTo(px, py);
-                }
+                ctx.beginPath(); ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 3;
+                path.forEach((p, i) => {
+                    let x = p.x*cellSize + cellSize/2, y = p.y*cellSize + cellSize/2;
+                    if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                });
                 ctx.stroke();
             }
         }
 
-        function drawHeatmap(canvasId) {
-            if(gridData.length === 0 || colors.length === 0) return;
-            const ctx = document.getElementById(canvasId).getContext('2d');
+        function drawHeatmap(id) {
+            if(!gridData.length || !colors.length) return;
+            let ctx = document.getElementById(id).getContext('2d');
+            ctx.clearRect(0, 0, 270, 330);
+            for(let y=0; y<rows; y++){
+                for(let x=0; x<cols; x++){
+                    let idx = Math.floor(((gridData[y][x]-umin)/(umax-umin))*unum);
+                    ctx.fillStyle = colors[Math.min(Math.max(idx,0), unum-1)];
+                    ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
+                }
+            }
+        }
+
+        function calculateDijkstra() {
+            if(!gridData.length) return [];
+            let dist = Array(rows).fill().map(()=>Array(cols).fill(Infinity)), prev = Array(rows).fill().map(()=>Array(cols).fill(null)), pq = [];
+            dist[startPt.y][startPt.x] = gridData[startPt.y][startPt.x];
+            pq.push({x: startPt.x, y: startPt.y, c: dist[startPt.y][startPt.x]});
+            while(pq.length){
+                pq.sort((a,b)=>a.c-b.c); let curr = pq.shift();
+                if(curr.x===endPt.x && curr.y===endPt.y) break;
+                [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dx,dy])=>{
+                    let nx = curr.x+dx, ny = curr.y+dy;
+                    if(nx>=0 && nx<cols && ny>=0 && ny<rows){
+                        let cost = dist[curr.y][curr.x] + gridData[ny][nx];
+                        if(cost < dist[ny][nx]){ dist[ny][nx]=cost; prev[ny][nx]={x:curr.x, y:curr.y}; pq.push({x:nx, y:ny, c:cost}); }
+                    }
+                });
+            }
+            let res = [], c = {x:endPt.x, y:endPt.y};
+            while(c){ res.push(c); c = prev[c.y][c.x]; }
+            return res.reverse();
+        }
+    </script>
+</body>
+</html>
