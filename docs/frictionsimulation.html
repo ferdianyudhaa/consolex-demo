@@ -127,12 +127,11 @@
     </div>
 
     <script>
-        // Variabel Global
         let cols = 9, rows = 11, umin = 0.2, umax = 0.7, unum = 11;
         let gridData = [];
         let colors = [];
-        let startPt = {x: 4, y: 5}; // Hijau
-        let endPt = {x: 6, y: 2};   // Biru
+        let startPt = {x: 4, y: 5};
+        let endPt = {x: 6, y: 2};
         const cellSize = 30;
 
         function setBtn(id, enabled, highlight = false) {
@@ -165,7 +164,6 @@
             }
         }
 
-        // --- PANEL 1 LOGIC ---
         function data1() {
             document.getElementById('ta1').value = "COLS 9\nROWS 11\nUMIN 0.20\nUMAX 0.70\nUNUM 11\nSEPC ;";
             setBtn('data-1', true, true);
@@ -199,7 +197,6 @@
             document.getElementById('out1').value = dataStr;
         }
 
-        // --- PANEL 2 LOGIC ---
         function data2() {
             document.getElementById('ta2').value = "CNUM 11\nCL00 #522\nCL01 #622\nCL02 #722\nCL03 #822\nCL04 #922\nCL05 #a22\nCL06 #b22\nCL07 #c22\nCL08 #d22\nCL09 #e22\nCL10 #f22";
             setBtn('data-2', true, true);
@@ -225,7 +222,6 @@
             drawHeatmap('cv2');
         }
 
-        // --- PANEL 3 LOGIC ---
         function data3() {
             document.getElementById('ta3').value = "XMIN 0\nYMIN 0\nXMAX 9\nYMAX 11\nSX 4\nSY 5\nEX 6\nEY 2";
             setBtn('data-3', true, true);
@@ -249,7 +245,6 @@
             ctx.fillStyle = '#8080ff'; ctx.fillRect(endPt.x * cellSize, endPt.y * cellSize, cellSize, cellSize);
         }
 
-        // --- PANEL 4 LOGIC (LINTASAN) ---
         function data4() {
             document.getElementById('ta4').value = "ALG DIJKSTRA\nCOST MU\nPATH LINE\nCOLOR #FFD700\nWIDTH 3";
             setBtn('data-4', true, true);
@@ -287,63 +282,6 @@
             }
         }
 
-        // --- FUNGSI BANTUAN ---
         function drawHeatmap(canvasId) {
             if(gridData.length === 0 || colors.length === 0) return;
             const ctx = document.getElementById(canvasId).getContext('2d');
-            ctx.clearRect(0, 0, 270, 330);
-            for (let y = 0; y < rows; y++) {
-                for (let x = 0; x < cols; x++) {
-                    let val = gridData[y][x];
-                    let idx = Math.floor(((val - umin) / (umax - umin)) * unum);
-                    if (idx < 0) idx = 0; if (idx >= unum) idx = unum - 1;
-                    
-                    ctx.fillStyle = colors[idx];
-                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-                }
-            }
-        }
-
-        function calculateDijkstra() {
-            if(gridData.length === 0) return [];
-            let dist = Array(rows).fill().map(() => Array(cols).fill(Infinity));
-            let prev = Array(rows).fill().map(() => Array(cols).fill(null));
-            let pq = [];
-
-            dist[startPt.y][startPt.x] = gridData[startPt.y][startPt.x];
-            pq.push({x: startPt.x, y: startPt.y, cost: dist[startPt.y][startPt.x]});
-
-            const dx = [0, 0, 1, -1];
-            const dy = [1, -1, 0, 0];
-
-            while (pq.length > 0) {
-                pq.sort((a, b) => a.cost - b.cost);
-                let current = pq.shift();
-
-                let cx = current.x, cy = current.y;
-                if (cx === endPt.x && cy === endPt.y) break;
-
-                for (let i = 0; i < 4; i++) {
-                    let nx = cx + dx[i], ny = cy + dy[i];
-                    if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
-                        let newCost = dist[cy][cx] + gridData[ny][nx];
-                        if (newCost < dist[ny][nx]) {
-                            dist[ny][nx] = newCost;
-                            prev[ny][nx] = {x: cx, y: cy};
-                            pq.push({x: nx, y: ny, cost: newCost});
-                        }
-                    }
-                }
-            }
-
-            let path = [];
-            let curr = {x: endPt.x, y: endPt.y};
-            while (curr != null) {
-                path.push(curr);
-                curr = prev[curr.y][curr.x];
-            }
-            return path.reverse();
-        }
-    </script>
-</body>
-</html>
