@@ -1,223 +1,328 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulasi Pra UTS</title>
+    <title>Simulasi Pra UTS - Ferdian</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            margin: 20px;
         }
         .container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            display: flex;
+            flex-wrap: wrap;
             gap: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
         }
         .panel {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h3 {
-            font-size: 16px;
-            margin-top: 0;
-            color: #2c3e50;
-            text-align: center;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-            width: 100%;
-        }
-        textarea {
-            width: 100%;
-            height: 250px;
-            font-family: monospace;
-            font-size: 12px;
-            padding: 10px;
             border: 1px solid #ccc;
-            border-radius: 5px;
-            resize: none;
-        }
-        .controls {
-            margin-top: 15px;
+            padding: 10px;
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
+            background: #fff;
+            height: 350px;
+        }
+        textarea {
+            width: 140px;
+            height: 330px;
+            resize: none;
+            font-family: monospace;
+            font-size: 13px;
+            border: 1px solid #999;
+            padding: 5px;
+            white-space: pre-wrap;
+        }
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 80px;
         }
         button {
-            padding: 8px 15px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
+            padding: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            background-color: #f0f0f0;
+            border: 1px solid #999;
             cursor: pointer;
+        }
+        button:disabled {
+            color: #aaa;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            cursor: not-allowed;
+        }
+        button.active-border {
+            border: 2px solid #000;
             font-weight: bold;
-            transition: background 0.3s;
         }
-        button:hover { background-color: #2980b9; }
+        .canvas-container {
+            width: 270px;
+            height: 330px;
+            border: 1px solid #ccc;
+        }
         canvas {
-            border: 1px solid #bdc3c7;
-            background: #ecf0f1;
-            margin-top: 10px;
-        }
-        .legend {
-            font-size: 11px;
-            margin-top: 10px;
-            text-align: center;
-            color: #7f8c8d;
+            display: block;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>Simulasi Optimasi Lintasan Usaha Terkecil</h2>
-        <p>Distribusi Koefisien Gesek (μ)</p>
-    </div>
-
     <div class="container">
         <div class="panel">
-            <h3>1. Input Parameter (μ)</h3>
-            <textarea id="dataInput">COLS 9
-ROWS 11
-UMIN 0.20
-UMAX 0.70
-DATA
-0.40;0.35;0.20;0.60;0.60;0.40;0.55;0.50;0.55
-0.40;0.70;0.40;0.25;0.20;0.35;0.55;0.35;0.55
-0.35;0.60;0.25;0.50;0.30;0.35;0.35;0.65;0.35
-0.40;0.30;0.65;0.30;0.30;0.65;0.55;0.35;0.20
-0.25;0.55;0.30;0.50;0.65;0.60;0.65;0.65;0.20
-0.70;0.55;0.45;0.55;0.65;0.65;0.45;0.20;0.25
-0.55;0.65;0.50;0.35;0.60;0.55;0.35;0.20;0.65
-0.45;0.40;0.60;0.45;0.35;0.50;0.35;0.40;0.60
-0.30;0.25;0.45;0.55;0.60;0.45;0.25;0.50;0.60
-0.55;0.40;0.35;0.25;0.20;0.50;0.65;0.35;0.40
-0.20;0.25;0.30;0.55;0.50;0.45;0.30;0.45;0.55</textarea>
-            <div class="controls">
-                <button onclick="runSimulation()">Execute / Run</button>
+            <textarea id="ta1"></textarea>
+            <div class="buttons">
+                <button id="wipe-1" onclick="wipe(1)">wipe-1</button>
+                <button id="data-1" onclick="data1()">data-1</button>
+                <button id="read-1" onclick="read1()" disabled>read-1</button>
+                <button id="exec-1" onclick="exec1()" disabled>exec-1</button>
             </div>
+            <div class="canvas-container"><canvas id="cv1" width="270" height="330"></canvas></div>
         </div>
 
         <div class="panel">
-            <h3>2. Heatmap Peta Gesek</h3>
-            <canvas id="canvasHeatmap"></canvas>
-            <div class="legend">Gelap = Licin (μ rendah)<br>Terang = Kasar (μ tinggi)</div>
+            <textarea id="ta2"></textarea>
+            <div class="buttons">
+                <button id="wipe-2" onclick="wipe(2)">wipe-2</button>
+                <button id="data-2" onclick="data2()" disabled>data-2</button>
+                <button id="read-2" onclick="read2()" disabled>read-2</button>
+                <button id="exec-2" onclick="exec2()" disabled>exec-2</button>
+            </div>
+            <div class="canvas-container"><canvas id="cv2" width="270" height="330"></canvas></div>
         </div>
 
         <div class="panel">
-            <h3>3. Titik Awal & Akhir</h3>
-            <canvas id="canvasPoints"></canvas>
-            <div class="legend">Hijau = Start (0,8)<br>Biru = End (6,8)</div>
+            <textarea id="ta3"></textarea>
+            <div class="buttons">
+                <button id="wipe-3" onclick="wipe(3)">wipe-3</button>
+                <button id="data-3" onclick="data3()" disabled>data-3</button>
+                <button id="read-3" onclick="read3()" disabled>read-3</button>
+                <button id="exec-3" onclick="exec3()" disabled>exec-3</button>
+            </div>
+            <div class="canvas-container"><canvas id="cv3" width="270" height="330"></canvas></div>
         </div>
 
         <div class="panel">
-            <h3>4. Lintasan Usaha Terkecil</h3>
-            <canvas id="canvasPath"></canvas>
-            <div class="legend">Garis Kuning = Jalur paling efisien menghindari area μ tinggi</div>
+            <textarea id="ta4"></textarea>
+            <div class="buttons">
+                <button id="wipe-4" onclick="wipe(4)">wipe-4</button>
+                <button id="data-4" onclick="data4()" disabled>data-4</button>
+                <button id="read-4" onclick="read4()" disabled>read-4</button>
+                <button id="exec-4" onclick="exec4()" disabled>exec-4</button>
+            </div>
+            <div class="canvas-container"><canvas id="cv4" width="270" height="330"></canvas></div>
         </div>
     </div>
 
     <script>
-        const cellSize = 30; // Ukuran pixel tiap grid
-        let cols = 0, rows = 0, umin = 0, umax = 0;
+        // Variabel Global
+        let cols = 9, rows = 11, umin = 0.2, umax = 0.7, unum = 11;
         let gridData = [];
-        
-        // Posisi Start dan End (Format: [x, y] atau [kolom, baris])
-        const startPoint = [0, 8]; 
-        const endPoint = [6, 8];
+        let colors = [];
+        let startPt = {x: 4, y: 5}; // Hijau
+        let endPt = {x: 6, y: 2};   // Biru
+        const cellSize = 30;
 
-        function parseData() {
-            const lines = document.getElementById('dataInput').value.trim().split('\n');
-            gridData = [];
+        function setBtn(id, enabled, highlight = false) {
+            const btn = document.getElementById(id);
+            btn.disabled = !enabled;
+            if(highlight) btn.classList.add('active-border');
+            else btn.classList.remove('active-border');
+        }
+
+        function wipe(panel) {
+            document.getElementById('ta' + panel).value = '';
+            const ctx = document.getElementById('cv' + panel).getContext('2d');
+            ctx.clearRect(0, 0, 270, 330);
             
-            lines.forEach(line => {
-                if (line.startsWith('COLS')) cols = parseInt(line.split(' ')[1]);
-                else if (line.startsWith('ROWS')) rows = parseInt(line.split(' ')[1]);
-                else if (line.startsWith('UMIN')) umin = parseFloat(line.split(' ')[1]);
-                else if (line.startsWith('UMAX')) umax = parseFloat(line.split(' ')[1]);
-                else if (!line.startsWith('DATA') && line.trim() !== '') {
-                    // Ambil baris angka, bersihkan, jadikan array float
-                    let rowVals = line.split(';').filter(v => v.trim() !== '').map(parseFloat);
-                    if(rowVals.length > 0) gridData.push(rowVals);
+            // Reset state tombol sesuai panel
+            if(panel === 1) {
+                setBtn('data-1', true); setBtn('read-1', false); setBtn('exec-1', false);
+            } else if(panel === 2) {
+                setBtn('data-2', !document.getElementById('read-1').disabled); 
+                setBtn('read-2', false); setBtn('exec-2', false);
+            } else if(panel === 3) {
+                setBtn('data-3', !document.getElementById('read-2').disabled); 
+                setBtn('read-3', false); setBtn('exec-3', false);
+            } else if(panel === 4) {
+                setBtn('data-4', !document.getElementById('read-3').disabled); 
+                setBtn('read-4', false); setBtn('exec-4', false);
+            }
+        }
+
+        // --- PANEL 1 LOGIC ---
+        function data1() {
+            document.getElementById('ta1').value = "COLS 9\nROWS 11\nUMIN 0.20\nUMAX 0.70\nUNUM 11\nSEPC ;";
+            setBtn('data-1', true, true);
+            setBtn('read-1', true);
+        }
+
+        function read1() {
+            setBtn('data-1', true, false);
+            setBtn('read-1', true, true);
+            setBtn('exec-1', true);
+            setBtn('data-2', true); // Mengaktifkan data-2
+        }
+
+        function exec1() {
+            setBtn('read-1', true, false);
+            setBtn('exec-1', true, true);
+            
+            let dataStr = "\n";
+            gridData = [];
+            for(let r=0; r<rows; r++) {
+                let rowVals = [];
+                for(let c=0; c<cols; c++) {
+                    // Generate random antara UMIN dan UMAX
+                    let val = (Math.random() * (umax - umin) + umin).toFixed(2);
+                    rowVals.push(parseFloat(val));
+                    dataStr += val.substring(1) + (c === cols-1 ? "" : ";");
                 }
+                gridData.push(rowVals);
+                dataStr += "\n";
+            }
+            // Append data ke textarea 1
+            let currentText = document.getElementById('ta1').value;
+            // Bersihkan data lama jika di klik exec berkali-kali
+            if(currentText.includes(";")) {
+                currentText = currentText.substring(0, currentText.indexOf("\n.") || currentText.indexOf("\n0."));
+            }
+            document.getElementById('ta1').value = currentText.trim() + dataStr;
+        }
+
+        // --- PANEL 2 LOGIC ---
+        function data2() {
+            document.getElementById('ta2').value = "CNUM 11\nCL00 #522\nCL01 #622\nCL02 #722\nCL03 #822\nCL04 #922\nCL05 #a22\nCL06 #b22\nCL07 #c22\nCL08 #d22\nCL09 #e22\nCL10 #f22";
+            setBtn('data-2', true, true);
+            setBtn('read-2', true);
+        }
+
+        function read2() {
+            setBtn('data-2', true, false);
+            setBtn('read-2', true, true);
+            setBtn('exec-2', true);
+            setBtn('data-3', true);
+            
+            // Parsing warna
+            const lines = document.getElementById('ta2').value.split('\n');
+            colors = [];
+            lines.forEach(line => {
+                if(line.startsWith('CL')) colors.push(line.split(' ')[1]);
             });
         }
 
-        // Fungsi pemetaan warna (Dari Merah Gelap ke Merah Terang)
-        function getColor(value) {
-            // Normalisasi nilai ke skala 0 - 1
-            let norm = (value - umin) / (umax - umin);
-            if (norm < 0) norm = 0; if (norm > 1) norm = 1;
-            
-            // Konversi ke warna RGB. Merah tetap tinggi, hijau dan biru meningkat agar makin terang
-            let r = Math.floor(80 + (norm * 175)); // 80 sampai 255
-            let g = Math.floor(34 + (norm * 50));  // Sedikit gradasi
-            let b = Math.floor(34 + (norm * 50));
-            return `rgb(${r}, ${g}, ${b})`;
+        function exec2() {
+            setBtn('read-2', true, false);
+            setBtn('exec-2', true, true);
+            drawHeatmap('cv2');
         }
 
-        function drawHeatmap(ctx) {
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        // --- PANEL 3 LOGIC ---
+        function data3() {
+            document.getElementById('ta3').value = "XMIN 0\nYMIN 0\nXMAX 9\nYMAX 11\nSX 4\nSY 5\nEX 6\nEY 2";
+            setBtn('data-3', true, true);
+            setBtn('read-3', true);
+        }
+
+        function read3() {
+            setBtn('data-3', true, false);
+            setBtn('read-3', true, true);
+            setBtn('exec-3', true);
+            setBtn('data-4', true);
+        }
+
+        function exec3() {
+            setBtn('read-3', true, false);
+            setBtn('exec-3', true, true);
+            drawHeatmap('cv3');
+            
+            const ctx = document.getElementById('cv3').getContext('2d');
+            // Gambar Start Hijau
+            ctx.fillStyle = '#80ff80';
+            ctx.fillRect(startPt.x * cellSize, startPt.y * cellSize, cellSize, cellSize);
+            // Gambar End Biru
+            ctx.fillStyle = '#8080ff';
+            ctx.fillRect(endPt.x * cellSize, endPt.y * cellSize, cellSize, cellSize);
+        }
+
+        // --- PANEL 4 LOGIC (LINTASAN) ---
+        function data4() {
+            document.getElementById('ta4').value = "ALG DIJKSTRA\nCOST MU\nPATH LINE\nCOLOR #FFD700\nWIDTH 3";
+            setBtn('data-4', true, true);
+            setBtn('read-4', true);
+        }
+
+        function read4() {
+            setBtn('data-4', true, false);
+            setBtn('read-4', true, true);
+            setBtn('exec-4', true);
+        }
+
+        function exec4() {
+            setBtn('read-4', true, false);
+            setBtn('exec-4', true, true);
+            
+            // Gambar Ulang Heatmap dan Titik
+            drawHeatmap('cv4');
+            const ctx = document.getElementById('cv4').getContext('2d');
+            ctx.fillStyle = '#80ff80'; ctx.fillRect(startPt.x * cellSize, startPt.y * cellSize, cellSize, cellSize);
+            ctx.fillStyle = '#8080ff'; ctx.fillRect(endPt.x * cellSize, endPt.y * cellSize, cellSize, cellSize);
+
+            // Cari Jalur
+            let path = calculateDijkstra();
+            
+            // Gambar Jalur
+            if(path.length > 0) {
+                ctx.beginPath();
+                ctx.strokeStyle = '#FFD700'; // Kuning Terang
+                ctx.lineWidth = 3;
+                for (let i = 0; i < path.length; i++) {
+                    let px = (path[i].x * cellSize) + (cellSize / 2);
+                    let py = (path[i].y * cellSize) + (cellSize / 2);
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.stroke();
+            }
+        }
+
+        // --- FUNGSI BANTUAN ---
+        function drawHeatmap(canvasId) {
+            if(gridData.length === 0 || colors.length === 0) return;
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            ctx.clearRect(0, 0, 270, 330);
             for (let y = 0; y < rows; y++) {
                 for (let x = 0; x < cols; x++) {
-                    ctx.fillStyle = getColor(gridData[y][x]);
+                    let val = gridData[y][x];
+                    let idx = Math.floor(((val - umin) / (umax - umin)) * unum);
+                    if (idx < 0) idx = 0; if (idx >= unum) idx = unum - 1;
+                    
+                    ctx.fillStyle = colors[idx];
                     ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
                 }
             }
         }
 
-        function drawPoints(ctx) {
-            // Gambar Start (Hijau)
-            ctx.fillStyle = '#2ecc71'; 
-            ctx.fillRect(startPoint[0] * cellSize, startPoint[1] * cellSize, cellSize, cellSize);
-            
-            // Gambar End (Biru)
-            ctx.fillStyle = '#3498db'; 
-            ctx.fillRect(endPoint[0] * cellSize, endPoint[1] * cellSize, cellSize, cellSize);
-        }
-
-        // Algoritma Dijkstra untuk pathfinding
-        function findShortestPath() {
+        function calculateDijkstra() {
+            if(gridData.length === 0) return [];
             let dist = Array(rows).fill().map(() => Array(cols).fill(Infinity));
             let prev = Array(rows).fill().map(() => Array(cols).fill(null));
-            let pq = []; // Priority Queue sederhana
+            let pq = [];
 
-            dist[startPoint[1]][startPoint[0]] = gridData[startPoint[1]][startPoint[0]];
-            pq.push({x: startPoint[0], y: startPoint[1], cost: dist[startPoint[1]][startPoint[0]]});
+            dist[startPt.y][startPt.x] = gridData[startPt.y][startPt.x];
+            pq.push({x: startPt.x, y: startPt.y, cost: dist[startPt.y][startPt.x]});
 
             const dx = [0, 0, 1, -1];
             const dy = [1, -1, 0, 0];
 
             while (pq.length > 0) {
-                // Ambil sel dengan cost terkecil
                 pq.sort((a, b) => a.cost - b.cost);
                 let current = pq.shift();
 
-                let cx = current.x;
-                let cy = current.y;
-
-                if (cx === endPoint[0] && cy === endPoint[1]) break; // Sampai tujuan
+                let cx = current.x, cy = current.y;
+                if (cx === endPt.x && cy === endPt.y) break;
 
                 for (let i = 0; i < 4; i++) {
-                    let nx = cx + dx[i];
-                    let ny = cy + dy[i];
-
-                    // Cek batas grid
+                    let nx = cx + dx[i], ny = cy + dy[i];
                     if (nx >= 0 && nx < cols && ny >= 0 && ny < rows) {
                         let newCost = dist[cy][cx] + gridData[ny][nx];
                         if (newCost < dist[ny][nx]) {
@@ -229,61 +334,13 @@ DATA
                 }
             }
 
-            // Backtracking untuk mendapatkan jalur
             let path = [];
-            let curr = {x: endPoint[0], y: endPoint[1]};
+            let curr = {x: endPt.x, y: endPt.y};
             while (curr != null) {
                 path.push(curr);
                 curr = prev[curr.y][curr.x];
             }
             return path.reverse();
-        }
-
-        function drawPath(ctx, path) {
-            ctx.beginPath();
-            ctx.strokeStyle = '#f1c40f'; // Warna Kuning
-            ctx.lineWidth = 4;
-            
-            for (let i = 0; i < path.length; i++) {
-                let px = (path[i].x * cellSize) + (cellSize / 2);
-                let py = (path[i].y * cellSize) + (cellSize / 2);
-                if (i === 0) ctx.moveTo(px, py);
-                else ctx.lineTo(px, py);
-            }
-            ctx.stroke();
-        }
-
-        function runSimulation() {
-            parseData();
-            
-            // Setup ukuran semua canvas
-            const canvases = [
-                document.getElementById('canvasHeatmap'),
-                document.getElementById('canvasPoints'),
-                document.getElementById('canvasPath')
-            ];
-            
-            canvases.forEach(canvas => {
-                canvas.width = cols * cellSize;
-                canvas.height = rows * cellSize;
-            });
-
-            const ctxHeat = canvases[0].getContext('2d');
-            const ctxPts = canvases[1].getContext('2d');
-            const ctxPath = canvases[2].getContext('2d');
-
-            // 1. Gambar Heatmap
-            drawHeatmap(ctxHeat);
-
-            // 2. Gambar Heatmap + Poin
-            drawHeatmap(ctxPts);
-            drawPoints(ctxPts);
-
-            // 3. Gambar Heatmap + Poin + Jalur
-            drawHeatmap(ctxPath);
-            drawPoints(ctxPath);
-            let optimalPath = findShortestPath();
-            drawPath(ctxPath, optimalPath);
         }
     </script>
 </body>
