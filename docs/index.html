@@ -15,7 +15,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden;
+            overflow: auto; /* Disesuaikan agar halaman bisa menyesuaikan tinggi */
         }
 
         /* Kotak Utama (Glassmorphism) */
@@ -30,6 +30,17 @@
             max-width: 450px;
             text-align: center;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            max-height: 90vh; /* Agar tidak bablas menabrak ujung layar */
+            overflow-y: auto; /* Memunculkan scroll otomatis di dalam kotak jika list tugas bertambah */
+        }
+
+        /* Desain scrollbar tipis di dalam kotak agar tetap elegan */
+        .card::-webkit-scrollbar {
+            width: 6px;
+        }
+        .card::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
         }
 
         h1 {
@@ -109,16 +120,20 @@
                 <span>Exercise 3</span>
                 <span class="btn-icon">➜</span>
             </a>
+
+            <a href="mockup.html" class="btn">
+                <span>Computation Application Mockup</span>
+                <span class="btn-icon">➜</span>
+            </a>
+
+            <a href="frictionsimulation.html" class="btn">
+                <span>Simulasi Pra UTS</span>
+                <span class="btn-icon">➜</span>
+            </a>
         </div>
 
         <footer>Institut Teknologi Bandung</footer>
     </div>
-<br><br>
-<div style="text-align: center; margin: 20px;">
-    <h3>Tugas Tambahan:</h3>
-    <a href="mockup.html" style="padding: 10px 20px; background-color: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
-        computation application mockup
-    </a>
-</div>
+
 </body>
 </html>
