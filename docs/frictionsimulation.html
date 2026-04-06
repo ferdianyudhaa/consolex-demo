@@ -21,7 +21,8 @@
             background: #fff;
             height: 350px;
         }
-        textarea {
+        /* Textarea Kiri (Parameter) */
+        textarea.ta-left {
             width: 140px;
             height: 330px;
             resize: none;
@@ -29,7 +30,19 @@
             font-size: 13px;
             border: 1px solid #999;
             padding: 5px;
-            white-space: pre-wrap;
+            box-sizing: border-box;
+        }
+        /* Textarea Kanan (Khusus Panel 1) */
+        textarea.ta-right {
+            width: 270px;
+            height: 330px;
+            resize: none;
+            font-family: monospace;
+            font-size: 13px;
+            border: 1px solid #ccc;
+            padding: 5px;
+            box-sizing: border-box;
+            background-color: #fafafa;
         }
         .buttons {
             display: flex;
@@ -69,18 +82,18 @@
 
     <div class="container">
         <div class="panel">
-            <textarea id="ta1"></textarea>
+            <textarea id="ta1" class="ta-left"></textarea>
             <div class="buttons">
                 <button id="wipe-1" onclick="wipe(1)">wipe-1</button>
                 <button id="data-1" onclick="data1()">data-1</button>
                 <button id="read-1" onclick="read1()" disabled>read-1</button>
                 <button id="exec-1" onclick="exec1()" disabled>exec-1</button>
             </div>
-            <div class="canvas-container"><canvas id="cv1" width="270" height="330"></canvas></div>
+            <textarea id="out1" class="ta-right" readonly></textarea>
         </div>
 
         <div class="panel">
-            <textarea id="ta2"></textarea>
+            <textarea id="ta2" class="ta-left"></textarea>
             <div class="buttons">
                 <button id="wipe-2" onclick="wipe(2)">wipe-2</button>
                 <button id="data-2" onclick="data2()" disabled>data-2</button>
@@ -91,7 +104,7 @@
         </div>
 
         <div class="panel">
-            <textarea id="ta3"></textarea>
+            <textarea id="ta3" class="ta-left"></textarea>
             <div class="buttons">
                 <button id="wipe-3" onclick="wipe(3)">wipe-3</button>
                 <button id="data-3" onclick="data3()" disabled>data-3</button>
@@ -102,7 +115,7 @@
         </div>
 
         <div class="panel">
-            <textarea id="ta4"></textarea>
+            <textarea id="ta4" class="ta-left"></textarea>
             <div class="buttons">
                 <button id="wipe-4" onclick="wipe(4)">wipe-4</button>
                 <button id="data-4" onclick="data4()" disabled>data-4</button>
@@ -130,22 +143,25 @@
         }
 
         function wipe(panel) {
-            document.getElementById('ta' + panel).value = '';
-            const ctx = document.getElementById('cv' + panel).getContext('2d');
-            ctx.clearRect(0, 0, 270, 330);
-            
-            // Reset state tombol sesuai panel
-            if(panel === 1) {
+            if (panel === 1) {
+                document.getElementById('ta1').value = '';
+                document.getElementById('out1').value = '';
                 setBtn('data-1', true); setBtn('read-1', false); setBtn('exec-1', false);
-            } else if(panel === 2) {
-                setBtn('data-2', !document.getElementById('read-1').disabled); 
-                setBtn('read-2', false); setBtn('exec-2', false);
-            } else if(panel === 3) {
-                setBtn('data-3', !document.getElementById('read-2').disabled); 
-                setBtn('read-3', false); setBtn('exec-3', false);
-            } else if(panel === 4) {
-                setBtn('data-4', !document.getElementById('read-3').disabled); 
-                setBtn('read-4', false); setBtn('exec-4', false);
+            } else {
+                document.getElementById('ta' + panel).value = '';
+                const ctx = document.getElementById('cv' + panel).getContext('2d');
+                ctx.clearRect(0, 0, 270, 330);
+                
+                if(panel === 2) {
+                    setBtn('data-2', !document.getElementById('read-1').disabled); 
+                    setBtn('read-2', false); setBtn('exec-2', false);
+                } else if(panel === 3) {
+                    setBtn('data-3', !document.getElementById('read-2').disabled); 
+                    setBtn('read-3', false); setBtn('exec-3', false);
+                } else if(panel === 4) {
+                    setBtn('data-4', !document.getElementById('read-3').disabled); 
+                    setBtn('read-4', false); setBtn('exec-4', false);
+                }
             }
         }
 
@@ -160,33 +176,27 @@
             setBtn('data-1', true, false);
             setBtn('read-1', true, true);
             setBtn('exec-1', true);
-            setBtn('data-2', true); // Mengaktifkan data-2
+            setBtn('data-2', true); 
         }
 
         function exec1() {
             setBtn('read-1', true, false);
             setBtn('exec-1', true, true);
             
-            let dataStr = "\n";
+            let dataStr = "";
             gridData = [];
             for(let r=0; r<rows; r++) {
                 let rowVals = [];
                 for(let c=0; c<cols; c++) {
-                    // Generate random antara UMIN dan UMAX
                     let val = (Math.random() * (umax - umin) + umin).toFixed(2);
                     rowVals.push(parseFloat(val));
                     dataStr += val.substring(1) + (c === cols-1 ? "" : ";");
                 }
                 gridData.push(rowVals);
-                dataStr += "\n";
+                dataStr += (r === rows-1 ? "" : "\n");
             }
-            // Append data ke textarea 1
-            let currentText = document.getElementById('ta1').value;
-            // Bersihkan data lama jika di klik exec berkali-kali
-            if(currentText.includes(";")) {
-                currentText = currentText.substring(0, currentText.indexOf("\n.") || currentText.indexOf("\n0."));
-            }
-            document.getElementById('ta1').value = currentText.trim() + dataStr;
+            // Kirim angka matriks ke kotak teks sebelah kanan (out1)
+            document.getElementById('out1').value = dataStr;
         }
 
         // --- PANEL 2 LOGIC ---
@@ -202,7 +212,6 @@
             setBtn('exec-2', true);
             setBtn('data-3', true);
             
-            // Parsing warna
             const lines = document.getElementById('ta2').value.split('\n');
             colors = [];
             lines.forEach(line => {
@@ -236,12 +245,8 @@
             drawHeatmap('cv3');
             
             const ctx = document.getElementById('cv3').getContext('2d');
-            // Gambar Start Hijau
-            ctx.fillStyle = '#80ff80';
-            ctx.fillRect(startPt.x * cellSize, startPt.y * cellSize, cellSize, cellSize);
-            // Gambar End Biru
-            ctx.fillStyle = '#8080ff';
-            ctx.fillRect(endPt.x * cellSize, endPt.y * cellSize, cellSize, cellSize);
+            ctx.fillStyle = '#80ff80'; ctx.fillRect(startPt.x * cellSize, startPt.y * cellSize, cellSize, cellSize);
+            ctx.fillStyle = '#8080ff'; ctx.fillRect(endPt.x * cellSize, endPt.y * cellSize, cellSize, cellSize);
         }
 
         // --- PANEL 4 LOGIC (LINTASAN) ---
@@ -261,19 +266,16 @@
             setBtn('read-4', true, false);
             setBtn('exec-4', true, true);
             
-            // Gambar Ulang Heatmap dan Titik
             drawHeatmap('cv4');
             const ctx = document.getElementById('cv4').getContext('2d');
             ctx.fillStyle = '#80ff80'; ctx.fillRect(startPt.x * cellSize, startPt.y * cellSize, cellSize, cellSize);
             ctx.fillStyle = '#8080ff'; ctx.fillRect(endPt.x * cellSize, endPt.y * cellSize, cellSize, cellSize);
 
-            // Cari Jalur
             let path = calculateDijkstra();
             
-            // Gambar Jalur
             if(path.length > 0) {
                 ctx.beginPath();
-                ctx.strokeStyle = '#FFD700'; // Kuning Terang
+                ctx.strokeStyle = '#FFD700'; 
                 ctx.lineWidth = 3;
                 for (let i = 0; i < path.length; i++) {
                     let px = (path[i].x * cellSize) + (cellSize / 2);
