@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>UTS / Midterm - Ferdian</title>
+    <style>
+        /* Tema Gelap (Dark Mode) */
+        body {
+            font-family: monospace, sans-serif;
+            background-color: #0f111a;
+            color: #a9b7c6;
+            margin: 20px;
+        }
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            max-width: 1000px;
+        }
+        .panel {
+            background-color: #1a1e29;
+            border: 1px solid #333;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+        .panel.full-width {
+            grid-column: 1 / -1;
+            flex-direction: column;
+        }
+        
+        /* Area Input Teks */
+        textarea {
+            background-color: #1a1e29;
+            color: #a9b7c6;
+            border: 1px solid #444;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 11px;
+            resize: none;
+        }
+        .ta-left { width: 120px; height: 180px; }
+        .ta-right { width: 200px; height: 180px; }
+        
+        /* Tombol-Tombol */
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 70px;
+        }
+        .buttons.horizontal {
+            flex-direction: row;
+            width: auto;
+            margin-bottom: 5px;
+        }
+        button {
+            background-color: #4b5263;
+            color: #fff;
+            border: none;
+            padding: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        button:hover { background-color: #5c6479; }
+        button:disabled { background-color: #2c313c; color: #555; cursor: not-allowed; }
+        
+        /* Canvas */
+        .canvas-container {
+            width: 200px;
+            height: 180px;
+            border: 1px solid #444;
+            background-color: #111;
+        }
+        canvas { display: block; }
+        
+        /* Khusus Panel 5 */
+        .p5-inputs { display: flex; gap: 10px; }
+        .p5-inputs textarea { height: 150px; }
+        #ta5-left { width: 120px; }
+        #ta5-right { width: 400px; }
+        .p5-canvas { width: 100%; height: 150px; border: 1px solid #444; background-color: #111; margin-top: 5px;}
+        
+        /* Highlight Biru aktif jika state read aktif */
+        .highlight-blue { border-left: 3px solid #3b82f6; border-bottom: 3px solid #3b82f6; }
+
+        /* Khusus Panel 6 (Loading) */
+        .loading-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .loading-row button { width: 60px; }
+        .progress-box {
+            width: 300px;
+            height: 15px;
+            border: 1px solid #555;
+            background-color: #111;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background-color: #60a5fa;
+            border-radius: 8px;
+        }
+        /* Animasi 5 detik */
+        @keyframes loadAnim {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        
+        <div class="panel">
+            <textarea id="ta1" class="ta-left"></textarea>
+            <div class="buttons">
+                <button id="wipe-1" onclick="wipeSingle(1)">wipe-1</button>
+                <button id="data-1" onclick="data1()">data-1</button>
+                <button id="read-1" onclick="read1()" disabled>read-1</button>
+                <button id="exec-1" onclick="exec1()" disabled>exec-1</button>
+            </div>
+            <textarea id="out1" class="ta-right" readonly></textarea>
+        </div>
+
+        <div class="panel">
+            <textarea id="ta2" class="ta-left"></textarea>
+            <div class="buttons">
+                <button id="wipe-2" onclick="wipeSingle(2)">wipe-2</button>
+                <button id="data-2" onclick="data2()" disabled>data-2</button>
+                <button id="read-2" onclick="read2()" disabled>read-2</button>
+                <button id="exec-2" onclick="exec2()" disabled>exec-2</button>
+            </div>
+            <div class="canvas-container"><canvas id="cv2" width="200" height="180"></canvas></div>
+        </div>
+
+        <div class="panel">
+            <textarea id="ta3" class="ta-left"></textarea>
+            <div class="buttons">
+                <button id="wipe-3" onclick="wipeSingle(3)">wipe-3</button>
+                <button id="data-3" onclick="data3()" disabled>data-3</button>
+                <button id="read-3" onclick="read3()" disabled>read-3</button>
+                <button id="exec-3" onclick="exec3()" disabled>exec-3</button>
+            </div>
+            <div class="canvas-container"><canvas id="cv3" width="200" height="180"></canvas></div>
+        </div>
+
+        <div class="panel" style="align-items: flex-start;">
+            <button id="wipe-all" onclick="masterWipe()" style="width: 100%;">wipe (Master Reset)</button>
+        </div>
+
+        <div class="panel full-width">
+            <div class="p5-inputs" id="p5-container">
+                <textarea id="ta5-left" readonly></textarea>
+                <textarea id="ta5-right" readonly></textarea>
+            </div>
+            <div class="buttons horizontal">
+                <button id="wipe-5" onclick="wipe5()">wipe</button>
+                <button id="data-5" onclick="data5()">data</button>
+                <button id="read-5" onclick="read5()" disabled>read</button>
+                <button id="exec-5" onclick="exec5()" disabled>exec</button>
+                <button id="none-5" disabled>none</button>
+                <button id="info-5" onclick="info5()">info</button>
+            </div>
+            <canvas id="cv5" class="p5-canvas" width="980" height="150"></canvas>
+        </div>
+
+        <div class="panel full-width">
+            <div class="loading-row">
+                <button id="btn-scan" onclick="toggleLoad('scan')">scan</button>
+                <div class="progress-box"><div class="progress-fill" id="fill-scan"></div></div>
+            </div>
+            <div class="loading-row">
+                <button id="btn-filter" onclick="toggleLoad('filter')">filter</button>
+                <div class="progress-box"><div class="progress-fill" id="fill-filter"></div></div>
+            </div>
+            <div class="loading-row">
+                <button id="btn-format" onclick="toggleLoad('format')">format</button>
+                <div class="progress-box"><div class="progress-fill" id="fill-format"></div></div>
+            </div>
+            <div class="loading-row">
+                <button id="btn-sort" onclick="toggleLoad('sort')">sort</button>
+                <div class="progress-box"><div class="progress-fill" id="fill-sort"></div></div>
+            </div>
+            <div class="loading-row">
+                <button id="btn-erase" onclick="toggleLoad('erase')">erase</button>
+                <div class="progress-box"><div class="progress-fill" id="fill-erase"></div></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Utilities
+        function btn(id, state) { document.getElementById(id).disabled = !state; }
+        function val(id, text) { document.getElementById(id).value = text; }
+
+        // --- MASTER WIPE (PANEL 4) ---
+        function masterWipe() {
+            wipeSingle(1); wipeSingle(2); wipeSingle(3); wipe5();
+            ['scan','filter','format','sort','erase'].forEach(id => {
+                let btn = document.getElementById('btn-'+id);
+                let fill = document.getElementById('fill-'+id);
+                btn.innerText = id;
+                fill.style.animation = 'none';
+                fill.style.width = '0%';
+            });
+        }
+
+        function wipeSingle(p) {
+            val('ta'+p, '');
+            if(p===1) val('out1', '');
+            else document.getElementById('cv'+p).getContext('2d').clearRect(0,0,200,180);
+            btn('data-'+p, true); btn('read-'+p, false); btn('exec-'+p, false);
+            if(p===1) { btn('data-2', false); btn('data-3', false); }
+        }
+
+        // --- PANEL 1 ---
+        function data1() { val('ta1', "COLS 9\nROWS 11"); btn('read-1', true); }
+        function read1() { btn('read-1', true); btn('exec-1', true); btn('data-2', true); }
+        function exec1() { val('out1', "0.45;0.23;0.70\n0.50;0.60;0.35"); }
+
+        // --- PANEL 2 ---
+        function data2() { val('ta2', "CL00 #522\nCL01 #622"); btn('read-2', true); }
+        function read2() { btn('exec-2', true); btn('data-3', true); }
+        function exec2() { 
+            let ctx = document.getElementById('cv2').getContext('2d');
+            ctx.fillStyle = '#f22'; ctx.fillRect(10,10,50,50);
+        }
+
+        // --- PANEL 3 ---
+        function data3() { val('ta3', "SX 4\nSY 5"); btn('read-3', true); }
+        function read3() { btn('exec-3', true); }
+        function exec3() { 
+            let ctx = document.getElementById('cv3').getContext('2d');
+            ctx.fillStyle = '#80ff80'; ctx.fillRect(50,50,20,20);
+        }
+
+        // --- PANEL 5 (Local Minima) ---
+        function wipe5() {
+            val('ta5-left', ''); val('ta5-right', '');
+            document.getElementById('cv5').getContext('2d').clearRect(0,0,980,150);
+            document.getElementById('p5-container').classList.remove('highlight-blue');
+            btn('data-5', true); btn('read-5', false); btn('exec-5', false);
+        }
+
+        function data5() {
+            val('ta5-left', "# palette\nNUMC 10\nCOL0 #888\nCOL1 #f22...");
+            val('ta5-right', "9;0;0;0;0;0;0;0...\n1;9;0;0;0;0;0;0...");
+            btn('read-5', true);
+        }
+
+        function read5() {
+            btn('exec-5', true);
+            // Highlight biru
+            document.getElementById('p5-container').classList.add('highlight-blue');
+            // Gambar Lembah Dasar (Merah)
+            drawMountain(false);
+        }
+
+        function exec5() {
+            // Gambar Overlay Garis Mendatar (Local Minima Trap - Pink)
+            drawMountain(true);
+        }
+
+        function drawMountain(showTrap) {
+            let ctx = document.getElementById('cv5').getContext('2d');
+            ctx.clearRect(0,0,980,150);
+            // Simulasi data ketinggian (lembah)
+            let heights = [14, 12, 10, 9, 8, 7, 7, 6, 6, 4, 3, 2, 2, 3, 5, 4, 4, 6];
+            let w = 20; // lebar batang
+            
+            for(let i=0; i<heights.length; i++) {
+                let h = heights[i] * 10; 
+                let y = 150 - h;
+                
+                // Batang Merah Dasar
+                ctx.fillStyle = '#f22';
+                ctx.fillRect(i*w, y, w, h);
+                // Grid kotak-kotak tipis
+                ctx.strokeStyle = '#333';
+                ctx.strokeRect(i*w, y, w, h);
+                // Puncak tipis pink
+                ctx.fillStyle = '#ffb3b3';
+                ctx.fillRect(i*w, y-5, w, 5);
+            }
+
+            // Jika tombol exec ditekan, isi area lembah (trap)
+            if(showTrap) {
+                ctx.fillStyle = 'rgba(255, 179, 179, 0.8)'; // Pink transparan
+                // Mengisi area indeks 9 sampai 13 (bagian yang dilingkari ungu)
+                ctx.fillRect(9*w, 150 - (5*10), w*5, 30); 
+            }
+        }
+
+        function info5() {
+            alert("mockup-t4 v0.1");
+            if (confirm("Do you want to continue?")) {
+                let name = prompt("Who are you?", "Guest");
+                if (name !== null) {
+                    alert("Welcome, " + name);
+                }
+            }
+        }
+
+        // --- PANEL 6 (Loading/Multitasking) ---
+        function toggleLoad(id) {
+            let btn = document.getElementById('btn-' + id);
+            let fill = document.getElementById('fill-' + id);
+            
+            if (btn.innerText === 'stop') {
+                // Pause (Kembali ke nama awal)
+                btn.innerText = id;
+                fill.style.animationPlayState = 'paused';
+            } else {
+                // Play / Resume (Berubah jadi stop)
+                btn.innerText = 'stop';
+                if (!fill.style.animationName || fill.style.animationName === 'none') {
+                    // Mulai baru: 5 detik linear
+                    fill.style.animation = 'loadAnim 5s linear forwards';
+                }
+                fill.style.animationPlayState = 'running';
+            }
+        }
+    </script>
+</body>
+</html>
