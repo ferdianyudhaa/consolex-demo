@@ -40,8 +40,8 @@
             font-size: 11px;
             resize: none;
         }
-        .ta-left { width: 120px; height: 180px; }
-        .ta-right { width: 200px; height: 180px; }
+        .ta-left { width: 120px; height: 200px; }
+        .ta-right { width: 220px; height: 200px; }
         
         /* Tombol-Tombol */
         .buttons {
@@ -67,12 +67,15 @@
         button:hover { background-color: #5c6479; }
         button:disabled { background-color: #2c313c; color: #555; cursor: not-allowed; }
         
-        /* Canvas */
+        /* Canvas Panel 1-3 */
         .canvas-container {
-            width: 200px;
-            height: 180px;
+            width: 220px;
+            height: 200px;
             border: 1px solid #444;
             background-color: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         canvas { display: block; }
         
@@ -81,7 +84,7 @@
         .p5-inputs textarea { height: 150px; }
         #ta5-left { width: 120px; }
         #ta5-right { width: 400px; }
-        .p5-canvas { width: 100%; height: 150px; border: 1px solid #444; background-color: #111; margin-top: 5px;}
+        .p5-canvas { width: 100%; height: 200px; border: 1px solid #444; background-color: #111; margin-top: 5px;}
         
         /* Highlight Biru aktif jika state read aktif */
         .highlight-blue { border-left: 3px solid #3b82f6; border-bottom: 3px solid #3b82f6; }
@@ -103,7 +106,6 @@
             background-color: #60a5fa;
             border-radius: 8px;
         }
-        /* Animasi 5 detik */
         @keyframes loadAnim {
             from { width: 0%; }
             to { width: 100%; }
@@ -133,7 +135,7 @@
                 <button id="read-2" onclick="read2()" disabled>read-2</button>
                 <button id="exec-2" onclick="exec2()" disabled>exec-2</button>
             </div>
-            <div class="canvas-container"><canvas id="cv2" width="200" height="180"></canvas></div>
+            <div class="canvas-container"><canvas id="cv2" width="135" height="165"></canvas></div>
         </div>
 
         <div class="panel">
@@ -144,11 +146,11 @@
                 <button id="read-3" onclick="read3()" disabled>read-3</button>
                 <button id="exec-3" onclick="exec3()" disabled>exec-3</button>
             </div>
-            <div class="canvas-container"><canvas id="cv3" width="200" height="180"></canvas></div>
+            <div class="canvas-container"><canvas id="cv3" width="135" height="165"></canvas></div>
         </div>
 
         <div class="panel" style="align-items: flex-start;">
-            <button id="wipe-all" onclick="masterWipe()" style="width: 100%;">wipe (Master Reset)</button>
+            <button id="wipe-all" onclick="masterWipe()" style="width: 100%; padding: 10px;">wipe (Master Reset)</button>
         </div>
 
         <div class="panel full-width">
@@ -164,7 +166,7 @@
                 <button id="none-5" disabled>none</button>
                 <button id="info-5" onclick="info5()">info</button>
             </div>
-            <canvas id="cv5" class="p5-canvas" width="980" height="150"></canvas>
+            <canvas id="cv5" class="p5-canvas" width="980" height="200"></canvas>
         </div>
 
         <div class="panel full-width">
@@ -193,6 +195,11 @@
     </div>
 
     <script>
+        // Variabel Global untuk Panel 1-3
+        let cols = 9, rows = 11, umin = 0.2, umax = 0.7, unum = 11;
+        let gridData = [], colors = [], startPt = {x: 4, y: 5}, endPt = {x: 6, y: 2};
+        const cellSize = 15; // 9x15=135, 11*15=165 (Pas di canvas)
+
         // Utilities
         function btn(id, state) { document.getElementById(id).disabled = !state; }
         function val(id, text) { document.getElementById(id).value = text; }
@@ -212,86 +219,120 @@
         function wipeSingle(p) {
             val('ta'+p, '');
             if(p===1) val('out1', '');
-            else document.getElementById('cv'+p).getContext('2d').clearRect(0,0,200,180);
+            else document.getElementById('cv'+p).getContext('2d').clearRect(0,0,135,165);
             btn('data-'+p, true); btn('read-'+p, false); btn('exec-'+p, false);
             if(p===1) { btn('data-2', false); btn('data-3', false); }
         }
 
         // --- PANEL 1 ---
-        function data1() { val('ta1', "COLS 9\nROWS 11"); btn('read-1', true); }
+        function data1() { 
+            val('ta1', "COLS 9\nROWS 11\nUMIN 0.20\nUMAX 0.70\nUNUM 11\nSEPC ;"); 
+            btn('read-1', true); 
+        }
         function read1() { btn('read-1', true); btn('exec-1', true); btn('data-2', true); }
-        function exec1() { val('out1', "0.45;0.23;0.70\n0.50;0.60;0.35"); }
+        function exec1() { 
+            let ds = ""; gridData = [];
+            for(let r=0; r<rows; r++){
+                let rv = [];
+                for(let c=0; c<cols; c++){
+                    let v = (Math.random()*(umax-umin)+umin).toFixed(2);
+                    rv.push(parseFloat(v));
+                    ds += v.substring(1) + (c===cols-1?"":";");
+                }
+                gridData.push(rv);
+                ds += (r===rows-1?"":"\n");
+            }
+            val('out1', ds); 
+        }
 
         // --- PANEL 2 ---
-        function data2() { val('ta2', "CL00 #522\nCL01 #622"); btn('read-2', true); }
-        function read2() { btn('exec-2', true); btn('data-3', true); }
-        function exec2() { 
-            let ctx = document.getElementById('cv2').getContext('2d');
-            ctx.fillStyle = '#f22'; ctx.fillRect(10,10,50,50);
+        function data2() { 
+            val('ta2', "CNUM 11\nCL00 #522\nCL01 #622\nCL02 #722\nCL03 #822\nCL04 #922\nCL05 #a22\nCL06 #b22\nCL07 #c22\nCL08 #d22\nCL09 #e22\nCL10 #f22"); 
+            btn('read-2', true); 
         }
+        function read2() { 
+            btn('exec-2', true); btn('data-3', true); 
+            colors = [];
+            document.getElementById('ta2').value.split('\n').forEach(l => { if(l.startsWith('CL')) colors.push(l.split(' ')[1]); });
+        }
+        function exec2() { drawHeatmap('cv2'); }
 
         // --- PANEL 3 ---
-        function data3() { val('ta3', "SX 4\nSY 5"); btn('read-3', true); }
+        function data3() { val('ta3', "XMIN 0\nYMIN 0\nXMAX 9\nYMAX 11\nSX 4\nSY 5\nEX 6\nEY 2"); btn('read-3', true); }
         function read3() { btn('exec-3', true); }
         function exec3() { 
+            drawHeatmap('cv3');
             let ctx = document.getElementById('cv3').getContext('2d');
-            ctx.fillStyle = '#80ff80'; ctx.fillRect(50,50,20,20);
+            ctx.fillStyle = '#80ff80'; ctx.fillRect(startPt.x*cellSize, startPt.y*cellSize, cellSize, cellSize);
+            ctx.fillStyle = '#8080ff'; ctx.fillRect(endPt.x*cellSize, endPt.y*cellSize, cellSize, cellSize);
         }
 
-        // --- PANEL 5 (Local Minima) ---
+        function drawHeatmap(id) {
+            if(!gridData.length || !colors.length) return;
+            let ctx = document.getElementById(id).getContext('2d');
+            ctx.clearRect(0, 0, 135, 165);
+            for(let y=0; y<rows; y++){
+                for(let x=0; x<cols; x++){
+                    let idx = Math.floor(((gridData[y][x]-umin)/(umax-umin))*unum);
+                    ctx.fillStyle = colors[Math.min(Math.max(idx,0), unum-1)];
+                    ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
+                }
+            }
+        }
+
+        // --- PANEL 5 (Local Minima Trap) ---
         function wipe5() {
             val('ta5-left', ''); val('ta5-right', '');
-            document.getElementById('cv5').getContext('2d').clearRect(0,0,980,150);
+            document.getElementById('cv5').getContext('2d').clearRect(0,0,980,200);
             document.getElementById('p5-container').classList.remove('highlight-blue');
             btn('data-5', true); btn('read-5', false); btn('exec-5', false);
         }
 
         function data5() {
-            val('ta5-left', "# palette\nNUMC 10\nCOL0 #888\nCOL1 #f22...");
-            val('ta5-right', "9;0;0;0;0;0;0;0...\n1;9;0;0;0;0;0;0...");
+            val('ta5-left', "# palette\nNUMC 10\nCOL0 #888\nCOL1 #f22\nCOL2 #f33\nCOL3 #f44\nCOL4 #f55\nCOL5 #f66\nCOL6 #f77\nCOL7 #f88\nCOL8 #f99\nCOL9 #faa");
+            // Dummy data yang panjang agar mirip dengan gambar aslinya
+            let dataRight = "9;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0\n".repeat(15);
+            val('ta5-right', dataRight.trim());
             btn('read-5', true);
         }
 
         function read5() {
             btn('exec-5', true);
-            // Highlight biru
             document.getElementById('p5-container').classList.add('highlight-blue');
-            // Gambar Lembah Dasar (Merah)
             drawMountain(false);
         }
 
         function exec5() {
-            // Gambar Overlay Garis Mendatar (Local Minima Trap - Pink)
             drawMountain(true);
         }
 
         function drawMountain(showTrap) {
             let ctx = document.getElementById('cv5').getContext('2d');
-            ctx.clearRect(0,0,980,150);
-            // Simulasi data ketinggian (lembah)
-            let heights = [14, 12, 10, 9, 8, 7, 7, 6, 6, 4, 3, 2, 2, 3, 5, 4, 4, 6];
-            let w = 20; // lebar batang
+            ctx.clearRect(0,0,980,200);
+            // Array panjang yang menyerupai lekukan gunung di Gambar 3
+            let heights = [19, 15, 13, 11, 9, 8, 7, 6, 6, 6, 5, 5, 5, 5, 4, 4, 3, 2, 2, 2, 3, 4, 4, 5, 4, 4, 4, 4, 5, 6, 6, 6, 7];
+            let w = 26; // lebar batang
             
             for(let i=0; i<heights.length; i++) {
                 let h = heights[i] * 10; 
-                let y = 150 - h;
+                let y = 200 - h;
                 
                 // Batang Merah Dasar
                 ctx.fillStyle = '#f22';
                 ctx.fillRect(i*w, y, w, h);
-                // Grid kotak-kotak tipis
-                ctx.strokeStyle = '#333';
+                // Grid kotak tipis
+                ctx.strokeStyle = '#222';
                 ctx.strokeRect(i*w, y, w, h);
                 // Puncak tipis pink
                 ctx.fillStyle = '#ffb3b3';
-                ctx.fillRect(i*w, y-5, w, 5);
+                ctx.fillRect(i*w, y, w, 10);
             }
 
-            // Jika tombol exec ditekan, isi area lembah (trap)
+            // Jika exec ditekan, isi Local Minima Trap
             if(showTrap) {
-                ctx.fillStyle = 'rgba(255, 179, 179, 0.8)'; // Pink transparan
-                // Mengisi area indeks 9 sampai 13 (bagian yang dilingkari ungu)
-                ctx.fillRect(9*w, 150 - (5*10), w*5, 30); 
+                ctx.fillStyle = 'rgba(255, 179, 179, 0.9)'; // Pink transparan
+                // Mengisi "lembah" di indeks 16 sampai 20 dengan batas ketinggian 40px
+                ctx.fillRect(16*w, 200 - 40, w*5, 20); 
             }
         }
 
@@ -311,14 +352,11 @@
             let fill = document.getElementById('fill-' + id);
             
             if (btn.innerText === 'stop') {
-                // Pause (Kembali ke nama awal)
                 btn.innerText = id;
                 fill.style.animationPlayState = 'paused';
             } else {
-                // Play / Resume (Berubah jadi stop)
                 btn.innerText = 'stop';
                 if (!fill.style.animationName || fill.style.animationName === 'none') {
-                    // Mulai baru: 5 detik linear
                     fill.style.animation = 'loadAnim 5s linear forwards';
                 }
                 fill.style.animationPlayState = 'running';
