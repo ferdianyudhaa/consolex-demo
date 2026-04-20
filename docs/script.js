@@ -1,230 +1,115 @@
-// ==========================================
-// 1. INISIALISASI ELEMEN HTML (DOM)
-// ==========================================
+// --- 1. INISIALISASI ELEMEN UI ---
 const energySlider = document.getElementById('energy-slider');
 const energyVal = document.getElementById('energy-val');
 const rhoSlider = document.getElementById('rho-slider');
 const rhoVal = document.getElementById('rho-val');
 const btnCalculate = document.getElementById('btn-calculate');
 
-// Mengambil elemen Canvas
 const canvasSetup = document.getElementById('canvas-setup');
 const ctxSetup = canvasSetup.getContext('2d');
-const canvasBatho = document.getElementById('canvas-batho');
-const ctxBatho = canvasBatho.getContext('2d');
-const canvasEtar = document.getElementById('canvas-etar');
-const ctxEtar = canvasEtar.getContext('2d');
 
-const CANVAS_SIZE = 400;
-canvasSetup.width = CANVAS_SIZE; canvasSetup.height = CANVAS_SIZE;
-canvasBatho.width = CANVAS_SIZE; canvasBatho.height = CANVAS_SIZE;
-canvasEtar.width = CANVAS_SIZE; canvasEtar.height = CANVAS_SIZE;
+// --- 2. VARIABEL OBJEK PHANTOM ---
+// Mengatur ukuran dan posisi awal kotak material inhomogen
+let box = {
+    x: 100,
+    y: 150,
+    width: 200,
+    height: 100
+};
+let isDragging = false;
+let startX, startY;
 
-// ==========================================
-// 2. STATE & VARIABEL OBJEK (PHANTOM)
-// ==========================================
-let inhomoBlock = { x: 100, y: 150, width: 200, height: 100, isDragging: false };
-let startMouseX, startMouseY;
+// Mengatur ukuran canvas agar presisi
+canvasSetup.width = 400;
+canvasSetup.height = 400;
 
-function drawSetupCanvas() {
-    ctxSetup.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+// --- 3. FUNGSI MENGGAMBAR PHANTOM ---
+function drawPhantom() {
+    // Bersihkan layar
+    ctxSetup.clearRect(0, 0, canvasSetup.width, canvasSetup.height);
+
+    // 1. Gambar Medium Air (Background Biru Muda)
     ctxSetup.fillStyle = "#e0f7fa";
-    ctxSetup.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    ctxSetup.fillRect(0, 0, canvasSetup.width, canvasSetup.height);
 
-    ctxSetup.fillStyle = inhomoBlock.isDragging ? "#7f8c8d" : "#95a5a6";
-    ctxSetup.fillRect(inhomoBlock.x, inhomoBlock.y, inhomoBlock.width, inhomoBlock.height);
-
+    // 2. Gambar Material Inhomogen (Kotak Abu-abu)
+    ctxSetup.fillStyle = "#95a5a6";
+    ctxSetup.fillRect(box.x, box.y, box.width, box.height);
+    
+    // 3. Gambar Garis Berkas Radiasi (Garis Putus-putus Merah di tengah)
     ctxSetup.beginPath();
     ctxSetup.setLineDash([5, 5]);
-    ctxSetup.moveTo(CANVAS_SIZE / 2, 0);
-    ctxSetup.lineTo(CANVAS_SIZE / 2, CANVAS_SIZE);
-    ctxSetup.strokeStyle = "#e74c3c";
-    ctxSetup.lineWidth = 2;
+    ctxSetup.moveTo(canvasSetup.width / 2, 0);
+    ctxSetup.lineTo(canvasSetup.width / 2, canvasSetup.height);
+    ctxSetup.strokeStyle = "red";
     ctxSetup.stroke();
-    ctxSetup.setLineDash([]);
+    ctxSetup.setLineDash([]); // Reset garis
 }
 
-// Logika Drag and Drop Phantom
-function isMouseInBlock(mx, my) {
-    return (mx >= inhomoBlock.x && mx <= inhomoBlock.x + inhomoBlock.width &&
-            my >= inhomoBlock.y && my <= inhomoBlock.y + inhomoBlock.height);
-}
+// --- 4. FUNGSI INTERAKTIF (EVENT LISTENERS) ---
 
+// A. Interaksi Slider
+energySlider.addEventListener('input', () => {
+    energyVal.innerText = energySlider.value;
+});
+
+rhoSlider.addEventListener('input', () => {
+    rhoVal.innerText = rhoSlider.value;
+});
+
+// B. Interaksi Drag & Drop Kotak (Mouse)
 canvasSetup.addEventListener('mousedown', function(e) {
-    const rect = canvasSetup.getBoundingClientRect();
-    const mouseX = (e.clientX - rect.left) * (CANVAS_SIZE / rect.width);
-    const mouseY = (e.clientY - rect.top) * (CANVAS_SIZE / rect.height);
-    if (isMouseInBlock(mouseX, mouseY)) {
-        inhomoBlock.isDragging = true;
-        startMouseX = mouseX - inhomoBlock.x;
-        startMouseY = mouseY - inhomoBlock.y;
+    let rect = canvasSetup.getBoundingClientRect();
+    // Skala posisi klik sesuai ukuran asli canvas vs ukuran render di layar
+    let scaleX = canvasSetup.width / rect.width;
+    let scaleY = canvasSetup.height / rect.height;
+    
+    let mouseX = (e.clientX - rect.left) * scaleX;
+    let mouseY = (e.clientY - rect.top) * scaleY;
+
+    // Cek apakah klik tepat berada di dalam kotak abu-abu
+    if (mouseX >= box.x && mouseX <= box.x + box.width &&
+        mouseY >= box.y && mouseY <= box.y + box.height) {
+        isDragging = true;
+        startX = mouseX - box.x;
+        startY = mouseY - box.y;
+        canvasSetup.style.cursor = "grabbing";
     }
 });
 
 canvasSetup.addEventListener('mousemove', function(e) {
-    const rect = canvasSetup.getBoundingClientRect();
-    const mouseX = (e.clientX - rect.left) * (CANVAS_SIZE / rect.width);
-    const mouseY = (e.clientY - rect.top) * (CANVAS_SIZE / rect.height);
-    canvasSetup.style.cursor = isMouseInBlock(mouseX, mouseY) ? 'grab' : 'default';
-
-    if (inhomoBlock.isDragging) {
-        canvasSetup.style.cursor = 'grabbing';
-        inhomoBlock.x = Math.max(0, Math.min(mouseX - startMouseX, CANVAS_SIZE - inhomoBlock.width));
-        inhomoBlock.y = Math.max(0, Math.min(mouseY - startMouseY, CANVAS_SIZE - inhomoBlock.height));
-        drawSetupCanvas();
-    }
-});
-
-canvasSetup.addEventListener('mouseup', () => { inhomoBlock.isDragging = false; drawSetupCanvas(); });
-canvasSetup.addEventListener('mouseleave', () => { inhomoBlock.isDragging = false; drawSetupCanvas(); });
-
-energySlider.addEventListener('input', () => energyVal.innerText = energySlider.value);
-rhoSlider.addEventListener('input', () => rhoVal.innerText = rhoSlider.value);
-
-
-// ==========================================
-// 3. INISIALISASI GRAFIK (CHART.JS)
-// ==========================================
-const ctxPdd = document.getElementById('chart-pdd').getContext('2d');
-const ctxProfile = document.getElementById('chart-profile').getContext('2d');
-const depthLabels = Array.from({length: CANVAS_SIZE}, (_, i) => i);
-const profileLabels = Array.from({length: CANVAS_SIZE}, (_, i) => i - CANVAS_SIZE/2);
-
-let pddChart = new Chart(ctxPdd, {
-    type: 'line',
-    data: {
-        labels: depthLabels,
-        datasets: [
-            { label: 'Batho PDD', data: [], borderColor: '#e74c3c', borderWidth: 2, pointRadius: 0, tension: 0.1 },
-            { label: 'ETAR PDD', data: [], borderColor: '#2ecc71', borderWidth: 2, pointRadius: 0, tension: 0.1 }
-        ]
-    },
-    options: { responsive: true, maintainAspectRatio: false, scales: { y: { max: 1.0 }, x: { title: { display: true, text: 'Depth (px)' } } } }
-});
-
-let profileChart = new Chart(ctxProfile, {
-    type: 'line',
-    data: {
-        labels: profileLabels,
-        datasets: [
-            { label: 'Batho Profile', data: [], borderColor: '#3498db', borderWidth: 2, pointRadius: 0, tension: 0.1 },
-            { label: 'ETAR Profile', data: [], borderColor: '#9b59b6', borderWidth: 2, pointRadius: 0, tension: 0.1 }
-        ]
-    },
-    options: { responsive: true, maintainAspectRatio: false, scales: { y: { max: 1.0 }, x: { title: { display: true, text: 'Off-Axis Distance' } } } }
-});
-
-function updateCharts(bathoMatrix, etarMatrix) {
-    const centralAxisX = Math.floor(CANVAS_SIZE / 2);
-    const depthY = 200; // Profil diambil di kedalaman ini
-
-    pddChart.data.datasets[0].data = bathoMatrix[centralAxisX];
-    pddChart.data.datasets[1].data = etarMatrix[centralAxisX];
-    
-    profileChart.data.datasets[0].data = bathoMatrix.map(col => col[depthY]);
-    profileChart.data.datasets[1].data = etarMatrix.map(col => col[depthY]);
-
-    pddChart.update();
-    profileChart.update();
-}
-// ==========================================
-// 4. LOGIKA FISIKA & RENDER
-// ==========================================
-function getHeatmapColor(value) {
-    const h = (1.0 - value) * 240; 
-    return `hsl(${h}, 100%, 50%)`;
-}
-
-function renderHeatmap(matrix, ctx) {
-    ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-    const pixelSize = 4; 
-    for (let x = 0; x < CANVAS_SIZE; x += pixelSize) {
-        for (let y = 0; y < CANVAS_SIZE; y += pixelSize) {
-            ctx.fillStyle = getHeatmapColor(matrix[x][y]);
-            ctx.fillRect(x, y, pixelSize, pixelSize);
-        }
-    }
-}
-
-function runBathoSimulation() {
-    const rhoInhomo = parseFloat(rhoSlider.value);
-    const muAir = 0.05; 
-    const fieldStartX = CANVAS_SIZE / 2 - 50;
-    const fieldEndX = CANVAS_SIZE / 2 + 50;
-    let doseMatrix = [];
-
-    for (let x = 0; x < CANVAS_SIZE; x++) {
-        let doseCol = []; let d_eff = 0;
-        for (let y = 0; y < CANVAS_SIZE; y++) {
-            let isInField = (x >= fieldStartX && x <= fieldEndX);
-            let isInsideInhomo = (x >= inhomoBlock.x && x <= inhomoBlock.x + inhomoBlock.width && y >= inhomoBlock.y && y <= inhomoBlock.y + inhomoBlock.height);
-            d_eff += (isInsideInhomo ? rhoInhomo : 1.0) * 1; 
-            doseCol.push(isInField ? Math.exp(-muAir * (d_eff / 10)) : 0.05);
-        }
-        doseMatrix.push(doseCol);
-    }
-    renderHeatmap(doseMatrix, ctxBatho);
-    return doseMatrix; // Mengembalikan data untuk grafik
-}
-
-function runETARSimulation() {
-    const rhoInhomo = parseFloat(rhoSlider.value);
-    const muAir = 0.05; 
-    const fieldStartX = CANVAS_SIZE / 2 - 50;
-    const fieldEndX = CANVAS_SIZE / 2 + 50;
-    const scatterRadius = 15; 
-    let etarMatrix = [];
-
-    for (let x = 0; x < CANVAS_SIZE; x++) {
-        let doseCol = []; let d_eff = 0;
-        for (let y = 0; y < CANVAS_SIZE; y++) {
-            let isInField = (x >= fieldStartX && x <= fieldEndX);
-            let lateralDensitySum = 0; let weightSum = 0;
-
-            for (let dx = -scatterRadius; dx <= scatterRadius; dx++) {
-                let checkX = x + dx;
-                if (checkX >= 0 && checkX < CANVAS_SIZE) {
-                    let isInsideInhomo = (checkX >= inhomoBlock.x && checkX <= inhomoBlock.x + inhomoBlock.width && y >= inhomoBlock.y && y <= inhomoBlock.y + inhomoBlock.height);
-                    let weight = Math.exp(-(dx * dx) / (2 * 5 * 5)); 
-                    lateralDensitySum += (isInsideInhomo ? rhoInhomo : 1.0) * weight;
-                    weightSum += weight;
-                }
-            }
-            d_eff += (lateralDensitySum / weightSum) * 1; 
-            
-            let dose = isInField ? Math.exp(-muAir * (d_eff / 10)) : 0.05;
-            if (x > fieldStartX - 10 && x < fieldStartX + 10) dose *= 0.5;
-            if (x > fieldEndX - 10 && x < fieldEndX + 10) dose *= 0.5;
-            doseCol.push(dose);
-        }
-        etarMatrix.push(doseCol);
-    }
-    renderHeatmap(etarMatrix, ctxEtar);
-    return etarMatrix; // Mengembalikan data untuk grafik
-}
-
-// ==========================================
-// 5. TOMBOL EKSEKUSI & STARTUP
-// ==========================================
-btnCalculate.onclick = () => {
-    const originalText = btnCalculate.innerText;
-    btnCalculate.innerText = "Menghitung Matriks (Batho & ETAR)...";
-    btnCalculate.style.backgroundColor = "#e67e22";
-
-    setTimeout(() => {
-        // Menjalankan kedua simulasi dan menangkap datanya
-        let bathoData = runBathoSimulation(); 
-        let etarData = runETARSimulation();
+    if (isDragging) {
+        let rect = canvasSetup.getBoundingClientRect();
+        let scaleX = canvasSetup.width / rect.width;
+        let scaleY = canvasSetup.height / rect.height;
         
-        // Memasukkan kedua data ke dalam grafik
-        updateCharts(bathoData, etarData);
-        
-        btnCalculate.innerText = originalText;
-        btnCalculate.style.backgroundColor = "#27ae60";
-    }, 100);
-};
+        let mouseX = (e.clientX - rect.left) * scaleX;
+        let mouseY = (e.clientY - rect.top) * scaleY;
 
-window.onload = () => {
-    drawSetupCanvas();
-    btnCalculate.click();
-};
+        // Update koordinat kotak
+        box.x = mouseX - startX;
+        box.y = mouseY - startY;
+
+        // Gambar ulang kanvas setiap kali mouse bergeser
+        drawPhantom();
+    }
+});
+
+canvasSetup.addEventListener('mouseup', function() {
+    isDragging = false;
+    canvasSetup.style.cursor = "default";
+});
+
+canvasSetup.addEventListener('mouseleave', function() {
+    isDragging = false;
+    canvasSetup.style.cursor = "default";
+});
+
+// C. Interaksi Tombol (Persiapan untuk perhitungan matematis)
+btnCalculate.addEventListener('click', () => {
+    alert("Tombol berfungsi! Parameter: Energi = " + energySlider.value + " MV, Densitas = " + rhoSlider.value);
+    // Logika perhitungan matriks akan kita masukkan ke sini nanti
+});
+
+// --- 5. JALANKAN SAAT AWAL ---
+drawPhantom();
