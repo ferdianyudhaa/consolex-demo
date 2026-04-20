@@ -1,20 +1,29 @@
-/* Reset Dasar untuk margin dan jenis huruf */
+/* ==========================================
+   1. RESET & DASAR (GLOBAL STYLES)
+   ========================================== */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
-    background-color: #f0f2f5;
+    background-color: #f4f7f9; /* Warna abu-abu kebiruan yang sangat soft */
+    color: #2c3e50;
+    line-height: 1.6;
     padding: 20px;
 }
 
 header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+header h1 {
+    font-size: 1.8rem;
     color: #1a3a5f;
+    margin-bottom: 5px;
 }
 
 header p {
@@ -22,44 +31,162 @@ header p {
     font-weight: 500;
 }
 
-/* Konfigurasi CSS Grid Utama: 3 Kolom */
+/* ==========================================
+   2. ACCORDION REFERENSI (DETAILS)
+   ========================================== */
+.reference-box {
+    background-color: #fff;
+    border: 1px solid #d1d8dd;
+    border-radius: 8px;
+    margin: 0 auto 25px auto;
+    max-width: 1200px;
+    padding: 12px 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.reference-box summary {
+    font-weight: bold;
+    cursor: pointer;
+    color: #34495e;
+    outline: none;
+}
+
+.reference-content {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #bdc3c7;
+    font-size: 0.9rem;
+}
+
+.reference-content ul {
+    margin: 10px 0 15px 25px;
+}
+
+.reference-content a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* ==========================================
+   3. LAYOUT GRID (2 KOLOM X 3 BARIS)
+   ========================================== */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); 
-    grid-template-rows: auto auto;    
-    gap: 15px;
-    max-width: 1400px;
+    grid-template-columns: repeat(2, 1fr); /* 2 Kolom Sejajar */
+    gap: 25px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
-/* Desain untuk masing-masing kotak panel */
+/* ==========================================
+   4. DESAIN PANEL
+   ========================================== */
 .panel {
     background: #ffffff;
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border-top: 4px solid #3498db; /* Garis biru di atas panel */
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    border-top: 5px solid #3498db; /* Aksen biru di atas setiap panel */
+    display: flex;
+    flex-direction: column;
 }
 
 .panel h2 {
-    font-size: 1.1rem;
-    margin-bottom: 15px;
+    font-size: 1.15rem;
+    margin-bottom: 20px;
     color: #2c3e50;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 8px;
+    display: flex;
+    align-items: center;
 }
 
-/* Memastikan area gambar (canvas) responsif dan berbentuk kotak */
+/* ==========================================
+   5. FORM & INPUT (PANEL 1)
+   ========================================== */
+.control-group {
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #34495e;
+}
+
+/* Input angka dan select dropdown */
+input[type="number"], 
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #dcdde1;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #2f3640;
+    transition: border-color 0.3s;
+}
+
+input[type="number"]:focus, 
+select:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+/* Grouping Radio Button */
+.radio-group {
+    display: flex;
+    gap: 20px;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #eef0f2;
+}
+
+.radio-group label {
+    margin-bottom: 0;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+/* Tombol Eksekusi */
+button {
+    width: 100%;
+    padding: 14px;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #2ecc71;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* ==========================================
+   6. VISUALISASI KANVAS & CHART
+   ========================================== */
 .canvas-container {
     width: 100%;
-    aspect-ratio: 1 / 1;
-    background: #eef;
+    aspect-ratio: 1 / 1; /* Membuat kanvas selalu kotak sempurna */
+    background: #fdfdfd;
+    border: 1px solid #ecf0f1;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    border: 1px solid #bdc3c7;
-    border-radius: 4px;
+    overflow: hidden;
 }
 
 canvas {
@@ -67,195 +194,47 @@ canvas {
     height: auto !important;
 }
 
-/* Desain elemen input di Panel 1 */
-.control-group {
-    margin-bottom: 20px;
-}
-
-label {
-    display: block;
-    font-size: 0.95rem;
-    margin-bottom: 8px;
-    font-weight: 600;
-}
-
-input[type="range"] {
-    width: 80%;
-    margin-right: 10px;
-}
-
-span {
-    font-weight: bold;
-    color: #2980b9;
-}
-
-button {
-    width: 100%;
-    padding: 12px;
-    background-color: #27ae60;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: background-color 0.3s;
-}
-
-button:hover {
-    background-color: #2ecc71;
+/* Container khusus Chart.js */
+.chart-container {
+    flex-grow: 1;
+    min-height: 300px;
 }
 
 .hint {
     font-size: 0.8rem;
-    color: #7f8c8d;
-    margin-top: 10px;
-    font-style: italic;
+    color: #95a5a6;
+    margin-top: 12px;
     text-align: center;
+    font-style: italic;
 }
 
-/* Aturan Responsif: Jika layar mengecil (tablet/laptop kecil), ubah jadi 2 kolom */
+/* ==========================================
+   7. RESPONSIVITAS (MEDIA QUERIES)
+   ========================================== */
+
+/* Laptop kecil / Tablet landscape */
 @media (max-width: 1024px) {
     .dashboard-grid {
-        grid-template-columns: repeat(2, 1fr); 
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
     }
 }
 
-/* Aturan Responsif: Jika dibuka di HP, ubah jadi 1 kolom (memanjang ke bawah) */
-@media (max-width: 600px) {
+/* HP & Tablet Portrait */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
     .dashboard-grid {
-        grid-template-columns: 1fr; 
+        grid-template-columns: 1fr; /* Jadi 1 kolom memanjang ke bawah */
     }
-}
 
-/* --- TAMBAHAN DESAIN UNTUK PANEL 1 & REFERENSI --- */
+    header h1 {
+        font-size: 1.4rem;
+    }
 
-/* Desain Accordion Referensi */
-.reference-box {
-    background-color: #fff;
-    border: 1px solid #bdc3c7;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    padding: 10px 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.reference-box summary {
-    font-weight: bold;
-    color: #2c3e50;
-    cursor: pointer;
-    outline: none;
-}
-
-.reference-content {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed #bdc3c7;
-    font-size: 0.9rem;
-    color: #34495e;
-}
-
-.reference-content ul {
-    margin-left: 20px;
-    margin-bottom: 10px;
-}
-
-.reference-content a {
-    color: #2980b9;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-/* Desain Input Form Panel 1 */
-.radio-group {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 10px;
-}
-
-.radio-group label {
-    display: inline-block;
-    margin-bottom: 0;
-    font-weight: normal;
-    cursor: pointer;
-}
-
-input[type="number"], select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
-    margin-bottom: 5px;
-}
-
-input[type="number"]:focus, select:focus {
-    border-color: #3498db;
-    outline: none;
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
-}/* --- TAMBAHAN DESAIN UNTUK PANEL 1 & REFERENSI --- */
-
-/* Desain Accordion Referensi */
-.reference-box {
-    background-color: #fff;
-    border: 1px solid #bdc3c7;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    padding: 10px 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.reference-box summary {
-    font-weight: bold;
-    color: #2c3e50;
-    cursor: pointer;
-    outline: none;
-}
-
-.reference-content {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed #bdc3c7;
-    font-size: 0.9rem;
-    color: #34495e;
-}
-
-.reference-content ul {
-    margin-left: 20px;
-    margin-bottom: 10px;
-}
-
-.reference-content a {
-    color: #2980b9;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-/* Desain Input Form Panel 1 */
-.radio-group {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 10px;
-}
-
-.radio-group label {
-    display: inline-block;
-    margin-bottom: 0;
-    font-weight: normal;
-    cursor: pointer;
-}
-
-input[type="number"], select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
-    margin-bottom: 5px;
-}
-
-input[type="number"]:focus, select:focus {
-    border-color: #3498db;
-    outline: none;
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+    .panel {
+        padding: 15px;
+    }
 }
