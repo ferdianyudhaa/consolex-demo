@@ -1,5 +1,5 @@
 // ==========================================
-// 1. INISIALISASI ELEMEN UI
+// 1. INISIALISASI ELEMEN UI & VARIABEL GLOBAL
 // ==========================================
 const inputDensity = document.getElementById('input-density');
 const inputThickness = document.getElementById('input-thickness');
@@ -7,6 +7,17 @@ const inputDepth = document.getElementById('input-depth');
 const inputField = document.getElementById('input-field');
 const inputDmax = document.getElementById('input-dmax');
 const btnCalculate = document.getElementById('btn-calculate');
+const radioEnergies = document.querySelectorAll('input[name="energy"]');
+
+let currentEnergy = document.querySelector('input[name="energy"]:checked').value;
+
+// Update variabel energi secara efisien tanpa DOM Query berulang
+radioEnergies.forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        currentEnergy = e.target.value;
+        drawPhantom();
+    });
+});
 
 // Kanvas Setup (Panel 2)
 const canvasSetup = document.getElementById('canvas-setup');
@@ -56,12 +67,35 @@ let startY;
 const resizeMargin = 10;
 
 // ==========================================
-// 3. FUNGSI FISIKA CORE
+// 3. FUNGSI FISIKA CORE (TEROPTIMASI & PRESISI)
 // ==========================================
+
+// Fungsi TAR (Dimodifikasi agar klop dengan contoh soal)
 function getTAR(depthCm, fieldSizeCm) {
     if (depthCm <= 0) return 1.0;
-    let mu = 0.05 - (fieldSizeCm * 0.0005); 
+    // Base mu disesuaikan agar TAR 10x10 6MV cocok dengan referensi manual
+    let baseMu = (currentEnergy === "6") ? 0.045 : 0.035; 
+    let mu = baseMu + ((10 - fieldSizeCm) * 0.0005); 
     return Math.exp(-mu * depthCm);
+}
+
+// Fungsi PDD (Dmax = 1.5 cm untuk 6MV | Dmax = 2.5 cm untuk 10MV)
+function getPDD(depthCm, fieldSizeCm) {
+    if (depthCm < 0) return 1.0;
+    
+    if (currentEnergy === "6") {
+        let mu = 0.0455;   // Atenuasi utama
+        let v = 2.85;      // Buildup elektron
+        let N = 1.0858;    // Faktor normalisasi puncak ke 100%
+        let pdd = N * (Math.exp(-mu * depthCm) - Math.exp(-v * depthCm));
+        return Math.max(0, Math.min(1.0, pdd));
+    } else { // 10 MV
+        let mu = 0.035; 
+        let v = 1.55; 
+        let N = 1.116; 
+        let pdd = N * (Math.exp(-mu * depthCm) - Math.exp(-v * depthCm));
+        return Math.max(0, Math.min(1.0, pdd));
+    }
 }
 
 function getPhysicalDensityAt(x, y) {
@@ -71,16 +105,28 @@ function getPhysicalDensityAt(x, y) {
     return 1.0; 
 }
 
+// 2D Cross-Sampling untuk Densitas Efektif (Lebih akurat secara Fisika 3D)
 function getEffectiveDensity(x, y, fsPx_half) {
     let sumRho = 0; let sumWeight = 0;
-    let scatterRadius = Math.min(fsPx_half, 50); 
+    let scatterRadius = Math.min(fsPx_half, 40); 
     
+    // Sampling Horizontal (Lateral scatter)
     for (let dx = -scatterRadius; dx <= scatterRadius; dx += 5) {
         let currX = x + dx;
-        let weight = Math.exp(-(dx * dx) / (2 * 15 * 15)); 
+        let weight = Math.exp(-(dx * dx) / (2 * 20 * 20)); 
         sumRho += getPhysicalDensityAt(currX, y) * weight;
         sumWeight += weight;
     }
+    
+    // Sampling Vertikal ke Atas (Pengaruh hamburan dari lapisan atas/Upstream)
+    for (let dy = -40; dy <= -5; dy += 5) {
+        let currY = y + dy;
+        if (currY < 0) continue;
+        let weight = Math.exp(-(dy * dy) / (2 * 25 * 25));
+        sumRho += getPhysicalDensityAt(x, currY) * weight;
+        sumWeight += weight;
+    }
+    
     return sumRho / sumWeight;
 }
 
@@ -91,17 +137,23 @@ function calculateDoseBathoAt(x, y) {
 
     if (x < centerX - fsPx_half || x > centerX + fsPx_half) return 0; 
 
-    let tar_homogen = getTAR(depth_cm, fs);
+    let base_dose = getPDD(depth_cm, fs);
     let isUnderBox = (x >= box.x && x <= box.x + box.width); 
     
     if (isUnderBox && depth_cm > d2_cm) {
-        let tar1 = getTAR(depth_cm - d1_cm, fs); let tar2 = getTAR(depth_cm - d2_cm, fs);
-        if (tar1 > 0 && tar2 > 0) return tar_homogen * Math.pow((tar2 / tar1), (rho_e - 1));
+        let tar_z2 = getTAR(depth_cm - d1_cm, fs); 
+        let tar_z1 = getTAR(depth_cm - d2_cm, fs);
+        if (tar_z1 > 0 && tar_z2 > 0) {
+            return base_dose * Math.pow((tar_z2 / tar_z1), (rho_e - 1));
+        }
     } else if (isUnderBox && depth_cm > d1_cm && depth_cm <= d2_cm) {
-        let tar1 = getTAR(depth_cm - d1_cm, fs); let tar2 = getTAR(0.1, fs);
-        if (tar1 > 0) return tar_homogen * Math.pow((tar2 / tar1), (rho_e - 1));
+        let tar_z2 = getTAR(depth_cm - d1_cm, fs); 
+        let tar_z1 = getTAR(0.1, fs);
+        if (tar_z1 > 0) {
+            return base_dose * Math.pow((tar_z2 / tar_z1), (rho_e - 1));
+        }
     }
-    return tar_homogen;
+    return base_dose;
 }
 
 function calculateDoseEtarAt(x, y) {
@@ -113,21 +165,31 @@ function calculateDoseEtarAt(x, y) {
     let waterEqDepth_cm = depth_cm;
     let isInXRange = (x >= box.x - 20 && x <= box.x + box.width + 20);
 
+    // Kalkulasi kedalaman ekuivalen air (d')
     if (isInXRange) {
-        if (y > d1_px && y <= d2_px) waterEqDepth_cm = (d1_px + (y - d1_px) * rho_e) / PPCM;
-        else if (y > d2_px) waterEqDepth_cm = (d1_px + (d2_px - d1_px) * rho_e + (y - d2_px)) / PPCM;
+        if (y > d1_px && y <= d2_px) {
+            waterEqDepth_cm = (d1_px + (y - d1_px) * rho_e) / PPCM;
+        } else if (y > d2_px) {
+            waterEqDepth_cm = (d1_px + (d2_px - d1_px) * rho_e + (y - d2_px)) / PPCM;
+        }
     }
 
     let rho_tilde = getEffectiveDensity(x, y, fsPx_half);
-    let tar_scaled = getTAR(waterEqDepth_cm, fs * rho_tilde);
     
-    let lateralDistance = Math.abs(x - centerX);
-    let penumbraFactor = 1.0;
-    if (lateralDistance > fsPx_half - 10) {
-        penumbraFactor = Math.max(0, 1 - (lateralDistance - (fsPx_half - 10)) / 20); 
-    }
+    // CF ETAR = TAR_scaled / TAR_standard
+    let tar_scaled = getTAR(waterEqDepth_cm, fs * rho_tilde);
+    let tar_standard = getTAR(depth_cm, fs);
+    let CF_ETAR = (tar_standard > 0) ? (tar_scaled / tar_standard) : 0;
+    
+    let base_dose = getPDD(depth_cm, fs);
 
-    return tar_scaled * penumbraFactor;
+    // Fungsi Sigmoid Klinis untuk Penumbra
+    let lateralDistance = Math.abs(x - centerX);
+    let edge = fsPx_half;
+    let steepness = 0.5; 
+    let penumbraFactor = 1 / (1 + Math.exp(steepness * (lateralDistance - edge)));
+
+    return base_dose * CF_ETAR * penumbraFactor;
 }
 
 function getColorForDose(val) {
@@ -254,16 +316,16 @@ function handleMouseMove(e, sourceCanvas) {
     renderTooltipOn(ctxEtar, x, y, "ETAR", calculateDoseEtarAt(x, y), getEffectiveDensity(x, y, (parseInt(inputField.value) * PPCM) / 2));
 }
 
+// Penerapan DRY (Don't Repeat Yourself) pada event hapus Tooltip
+function resetHeatmaps() {
+    ctxBatho.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE); ctxBatho.drawImage(offscreenBatho, 0, 0);
+    ctxEtar.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE); ctxEtar.drawImage(offscreenEtar, 0, 0);
+}
+
 canvasBatho.addEventListener('mousemove', (e) => handleMouseMove(e, canvasBatho));
 canvasEtar.addEventListener('mousemove', (e) => handleMouseMove(e, canvasEtar));
-canvasBatho.addEventListener('mouseleave', () => {
-    ctxBatho.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE); ctxBatho.drawImage(offscreenBatho, 0, 0);
-    ctxEtar.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE); ctxEtar.drawImage(offscreenEtar, 0, 0);
-});
-canvasEtar.addEventListener('mouseleave', () => {
-    ctxBatho.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE); ctxBatho.drawImage(offscreenBatho, 0, 0);
-    ctxEtar.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE); ctxEtar.drawImage(offscreenEtar, 0, 0);
-});
+canvasBatho.addEventListener('mouseleave', resetHeatmaps);
+canvasEtar.addEventListener('mouseleave', resetHeatmaps);
 
 // ==========================================
 // 6. EVENT LISTENERS (INTERAKSI & KLIK)
@@ -273,7 +335,7 @@ inputDepth.addEventListener('input', drawPhantom);
 inputField.addEventListener('change', drawPhantom);
 inputThickness.addEventListener('input', () => {
     let val = parseFloat(inputThickness.value);
-    if (!isNaN(val) && val > 0) { box.height = val * PPCM; drawPhantom(); }
+    if (!isNaN(val) && val > 0 && val <= 30) { box.height = val * PPCM; drawPhantom(); }
 });
 
 canvasSetup.addEventListener('mousemove', function(e) {
@@ -286,9 +348,18 @@ canvasSetup.addEventListener('mousemove', function(e) {
     }
 
     if (isDragging) {
-        box.y = mY - startY; if (box.y < 0) box.y = 0; drawPhantom();
+        box.y = mY - startY; 
+        if (box.y < 0) box.y = 0; 
+        // Cegah box terdorong keluar batas bawah kanvas
+        if (box.y + box.height > CANVAS_SIZE) box.y = CANVAS_SIZE - box.height;
+        drawPhantom();
     } else if (isResizing) {
-        let newH = mY - box.y; if (newH > 5) { box.height = newH; inputThickness.value = (newH / PPCM).toFixed(1); } drawPhantom();
+        let newH = mY - box.y; 
+        if (newH > 5 && (box.y + newH <= CANVAS_SIZE)) { 
+            box.height = newH; 
+            inputThickness.value = (newH / PPCM).toFixed(1); 
+        } 
+        drawPhantom();
     }
 });
 

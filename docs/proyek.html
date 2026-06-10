@@ -15,10 +15,10 @@
     </header>
 
     <details class="reference-box">
-        <summary>📚 Referensi Data Densitas (CT to ED) & Tabel</summary>
+        <summary>📊 1. Referensi Data Densitas Elektron (CT to ED)</summary>
         <div class="reference-content">
-            <p><strong>Nilai Densitas Elektron Relatif (ED) terhadap Air:</strong></p>
-            <ul>
+            <p style="margin-bottom: 10px;"><strong>Nilai Densitas Elektron Relatif (ED) terhadap Air:</strong></p>
+            <ul class="clean-list">
                 <li>Tulang Keras (Cortical Bone): 1.69</li>
                 <li>Tulang Biasa (Bone): 1.10 - 1.47</li>
                 <li>Otot (Muscle): 1.02</li>
@@ -26,8 +26,167 @@
                 <li>Paru-paru (Lung LN-450): 0.44</li>
                 <li>Paru-paru (Lung LN-300): 0.29</li>
             </ul>
-            <p><em>Sumber: Data kalibrasi CT ke ED (Asian Pacific Journal of Cancer Prevention).</em></p>
-            <p>🔗 <a href="#" target="_blank">Unduh Tabel TAR (BJR Supplement 25)</a></p>
+        </div>
+    </details>
+
+    <details class="reference-box" open>
+        <summary>📖 2. Dasar Teori: Persamaan Batho Power Law vs ETAR</summary>
+        <div class="reference-content">
+            
+            <div class="theory-block">
+                <h4 class="theory-title">A. Metode Batho Power Law</h4>
+                <p>Metode ini mengkoreksi atenuasi berkas secara 1D (<em>ray-tracing</em>) tanpa memperhitungkan hamburan silang. Jika titik kalkulasi berada <strong>di bawah</strong> area inhomogenitas:</p>
+                
+                <div class="formula-box">
+                    <div class="math-eq">
+                        <span>CF<sub>Batho</sub> =</span>
+                        <span style="display: inline-flex; align-items: center; margin-left: 10px;">
+                            <div class="fraction">
+                                <span class="numerator">TAR(z<sub>2</sub>, r)</span>
+                                <span class="denominator">TAR(z<sub>1</sub>, r)</span>
+                            </div>
+                            <sup style="position: relative; top: -1.2em; font-size: 0.85rem; margin-left: 5px;">&rho; - 1</sup>
+                        </span>
+                    </div>
+                </div>
+
+                <ul class="clean-list">
+                    <li><span class="var-badge">z<sub>2</sub></span> Jarak dari titik target ke permukaan <strong>atas</strong> inhomogenitas.</li>
+                    <li><span class="var-badge">z<sub>1</sub></span> Jarak dari titik target ke permukaan <strong>bawah</strong> inhomogenitas.</li>
+                    <li><span class="var-badge">&rho;</span> Densitas elektron relatif material inhomogen.</li>
+                </ul>
+            </div>
+
+            <hr style="margin: 20px 0; border: 0; border-top: 1px dashed #bdc3c7;">
+
+            <div class="theory-block" style="margin-bottom: 0;">
+                <h4 class="theory-title">B. Metode Equivalent TAR (ETAR)</h4>
+                <p>ETAR mengkalkulasi koreksi dosis 3D dengan menskalakan kedalaman dan ukuran lapangan (hamburan lateral) secara spasial berdasarkan sebaran densitas matriks di sekitar titik target.</p>
+                
+                <div class="formula-box">
+                    <div class="math-eq">
+                        <span>CF<sub>ETAR</sub> =</span>
+                        <span style="display: inline-flex; align-items: center; margin-left: 10px;">
+                            <div class="fraction">
+                                <span class="numerator">TAR(d', r')</span>
+                                <span class="denominator">TAR(d, r)</span>
+                            </div>
+                        </span>
+                    </div>
+                </div>
+
+                <ul class="clean-list">
+                    <li><span class="var-badge">d'</span> <strong>Kedalaman Ekuivalen Air:</strong><br> Penjumlahan produk ketebalan dan densitas tiap lapisan yang dilewati berkas. <br>
+                        <div class="math-eq" style="justify-content: flex-start; margin: 5px 0 10px 0; font-size: 1rem;">d' = &Sigma; &rho;<sub>i</sub> &middot; &Delta;z<sub>i</sub></div>
+                    </li>
+                    <li><span class="var-badge">r'</span> <strong>Ukuran Lapangan Ekuivalen:</strong><br> Lapangan fisik dikalikan densitas efektif 3D pada titik target. <br>
+                        <div class="math-eq" style="justify-content: flex-start; margin: 5px 0 10px 0; font-size: 1rem;">r' = r &times; &rho;̃</div>
+                    </li>
+                    <li><span class="var-badge">&rho;̃</span> <strong>Densitas Efektif 3D (Rho-tilde):</strong><br> Rata-rata densitas elemen volume sekitar target yang dibobot menggunakan <em>Gaussian weight</em>.<br>
+                        <div class="math-eq" style="justify-content: flex-start; margin: 10px 0 5px 0; font-size: 1rem;">
+                            &rho;̃ = 
+                            <span style="display: inline-flex; align-items: center; margin-left: 8px;">
+                                <div class="fraction">
+                                    <span class="numerator">&Sigma; &rho;(x,y) &middot; W(x)</span>
+                                    <span class="denominator">&Sigma; W(x)</span>
+                                </div>
+                            </span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </details>
+
+    <details class="reference-box" open style="margin-bottom: 30px;">
+        <summary>🧮 3. Contoh Perhitungan Manual (Sesuai Komputasi)</summary>
+        <div class="reference-content">
+            
+            <div class="example-box">
+                <strong>📌 Parameter Klinis (Target di Bawah Inhomogenitas):</strong>
+                <ul style="margin-top: 5px; margin-left: 15px;">
+                    <li>Energi: <strong>6 MV</strong> &nbsp;|&nbsp; Dosis Normalisasi (Dmax): <strong>200 cGy</strong></li>
+                    <li>Kedalaman Target (d): <strong>15 cm</strong> (Berkas melewati seluruh jaringan paru)</li>
+                    <li>Ukuran Lapangan (r): <strong>10 x 10 cm</strong></li>
+                    <li>Inhomogenitas: Paru-paru (<strong>&rho; = 0.29</strong>) dari kedalaman 5 cm s/d 13 cm. (Tebal = 8 cm)</li>
+                    <li><em>Dosis Dasar (PDD Air di kedalaman 15 cm) &approx; <strong>54.9% (109.9 cGy)</strong></em></li>
+                </ul>
+            </div>
+
+            <div class="logic-grid">
+                
+                <div class="logic-block">
+                    <div class="logic-title">A. Perhitungan Batho Power Law</div>
+                    <ol class="step-list">
+                        <li><strong>Ketebalan Jaringan (z):</strong> <br>
+                            Jarak dari target ke permukaan <strong>atas</strong> paru (z<sub>2</sub>) = 15 - 5 = <strong>10 cm</strong>.<br>
+                            Jarak dari target ke permukaan <strong>bawah</strong> paru (z<sub>1</sub>) = 15 - 13 = <strong>2 cm</strong>.
+                        </li>
+                        <li><strong>Nilai TAR Referensi (6 MV):</strong> <br>
+                            TAR(10 cm, 10x10) &approx; <strong>0.638</strong><br>
+                            TAR(2 cm, 10x10) &approx; <strong>0.914</strong>
+                        </li>
+                        <li><strong>Kalkulasi Faktor Koreksi (CF):</strong> <br>
+                            Pangkat = (&rho; - 1) = 0.29 - 1 = <strong>-0.71</strong>.
+                            <div class="math-eq" style="font-size: 1rem; justify-content: flex-start; margin: 10px 0;">
+                                <span>CF = </span>
+                                <span style="display: inline-flex; align-items: center; margin: 0 8px;">
+                                    <div class="fraction">
+                                        <span class="numerator">0.638</span>
+                                        <span class="denominator">0.914</span>
+                                    </div>
+                                    <sup style="position: relative; top: -1em; font-size: 0.85rem; margin-left: 3px;">-0.71</sup>
+                                </span>
+                                <span> = (0.698)<sup>-0.71</sup> = <strong>1.292</strong></span>
+                            </div>
+                        </li>
+                        <li><strong>Dosis Akhir (D<sub>Batho</sub>):</strong> <br>
+                            Dosis Dasar &times; CF = 109.9 &times; 1.292 <br>
+                            <strong>D<sub>Batho</sub> &approx; 142.0 cGy</strong>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="logic-block">
+                    <div class="logic-title etar">B. Perhitungan Equivalent TAR (ETAR)</div>
+                    <ol class="step-list">
+                        <li><strong>Kedalaman Ekuivalen (d'):</strong><br>
+                            Berkas menembus 5 cm air, 8 cm paru, dan 2 cm air.<br>
+                            d' = (5 &times; 1.0) + (8 &times; 0.29) + (2 &times; 1.0)<br>
+                            d' = 5 + 2.32 + 2 = <strong>9.32 cm</strong>.
+                        </li>
+                        <li><strong>Lapangan Ekuivalen (r'):</strong><br>
+                            Karena target berada 2 cm di bawah paru, densitas efektif 3D (&rho;̃) didominasi air namun terpengaruh paru di atasnya. Asumsikan &rho;̃ &approx; 0.9.<br>
+                            r' = 10 cm &times; 0.9 = <strong>9.0 cm</strong>.
+                        </li>
+                        <li><strong>Kalkulasi Faktor Koreksi (CF):</strong> <br>
+                            TAR<sub>scaled</sub>(9.32 cm, 9x9) &approx; <strong>0.654</strong><br>
+                            TAR<sub>standard</sub>(15 cm, 10x10) &approx; <strong>0.509</strong>
+                            <div class="math-eq" style="font-size: 1rem; justify-content: flex-start; margin: 10px 0;">
+                                <span>CF = </span>
+                                <span style="display: inline-flex; align-items: center; margin: 0 8px;">
+                                    <div class="fraction">
+                                        <span class="numerator">0.654</span>
+                                        <span class="denominator">0.509</span>
+                                    </div>
+                                </span>
+                                <span> = <strong>1.285</strong></span>
+                            </div>
+                        </li>
+                        <li><strong>Dosis Akhir (D<sub>ETAR</sub>):</strong> <br>
+                            Dosis Dasar &times; CF = 109.9 &times; 1.285 <br>
+                            <strong>D<sub>ETAR</sub> &approx; 141.2 cGy</strong>
+                        </li>
+                    </ol>
+                </div>
+
+            </div>
+
+            <div class="tip-box">
+                💡 <strong>Validasi Heatmap:</strong> Anda dapat mencocokkan hasil di atas! Atur kedalaman target di <strong>15 cm</strong> dan arahkan kursor ke titik tersebut di panel Heatmap untuk melihat kesesuaian nilai dosis akhir komputasi dengan hitungan manual ini.
+            </div>
+
         </div>
     </details>
 
@@ -57,8 +216,7 @@
 
             <div class="control-group">
                 <label for="input-depth">Kedalaman Target (cm):</label>
-                <input type="number" id="input-depth" value="10" step="0.5" min="1" max="30">
-            </div>
+                <input type="number" id="input-depth" value="15" step="0.5" min="1" max="30"> </div>
 
             <div class="control-group">
                 <label for="input-field">Ukuran Lapangan (cm):</label>
@@ -70,7 +228,7 @@
             </div>
 
             <div class="control-group">
-                <label for="input-dmax">Dosis Preskripsi (cGy):</label>
+                <label for="input-dmax">Dosis Normalisasi / Dmax (cGy):</label>
                 <input type="number" id="input-dmax" value="200" step="10" min="0">
             </div>
 
@@ -80,7 +238,7 @@
         <section id="panel-phantom" class="panel">
             <h2>2. Interactive Phantom</h2>
             <div class="canvas-container">
-                <canvas id="canvas-setup"></canvas>
+                <canvas id="canvas-setup">Maaf, peramban Anda tidak mendukung HTML5 Canvas.</canvas>
             </div>
             <p class="hint">Kotak abu-abu dapat digeser atau ditarik batas bawahnya</p>
         </section>
