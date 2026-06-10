@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ConsoleX Demo</title>
+</head>
+<body>
+
+  <div id="container"></div>
+
+  <script src="26b39.js"></script>
+  <script>
+    let cnt = getContainer("container");
+    let txa = createTextarea("text-output");
+
+    cnt.append(txa);
+
+    consolex.setOutput(txa);
+
+    // Bagian ini yang mencetak teks ke layar
+    consolex.log("Hello! My Name is Ferdian Yudha Ranadya.");
+    consolex.log("Student ID (NIM): 20225308");
+    consolex.log("This is my first time using HTML and JavaScript to display output on a webpage.");
+    consolex.log("For example, I can display the Greek letters: α, β, γ, φ, and ε.");
+    consolex.log("That's all. Thank you!");
+  </script>
+
+</body>
+</html>

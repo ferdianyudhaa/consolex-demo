@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Jadwal Kuliah</title>
+</head>
+<body>
+
+  <div id="container"></div>
+
+  <script src="26b39.js"></script>
+  <script src="26b41.js"></script>
+  
+  <script>
+    // 1. Siapkan wadah (container) dan layar output
+    const cnt = getContainer("container");
+    const txa = createTextarea("text-output");
+    const btnDiv = createDiv("button-container");
+
+    // 2. Buat Tombol sesuai nama HARI
+    const btnSenin = createButton("btn-senin", "Senin");
+    const btnSelasa = createButton("btn-selasa", "Selasa");
+    const btnRabu = createButton("btn-rabu", "Rabu");
+    const btnKamis = createButton("btn-kamis", "Kamis");
+    const btnEnter = createButton("btn-enter", "Beri Jarak"); // Tombol tambahan untuk merapikan teks
+
+    // 3. Masukkan elemen ke dalam layar
+    cnt.append(txa);
+    cnt.append(btnDiv);
+    
+    // Masukkan tombol ke dalam kolom tombol di sebelah kanan
+    btnDiv.append(btnSenin);
+    btnDiv.append(btnSelasa);
+    btnDiv.append(btnRabu);
+    btnDiv.append(btnKamis);
+    btnDiv.append(btnEnter); 
+
+    // Atur tata letak (Layout)
+    changeElementsFlex(["text-output", "3"], ["button-container", "1"]);
+
+    // Sambungkan consolex ke layar textarea
+    consolex.setOutput(txa);
+    
+    // --- BAGIAN MENGATUR ISI JADWAL ---
+
+    // Aksi ketika tombol SENIN diklik
+    btnSenin.addEventListener("click", () => {
+        consolex.log("=== JADWAL SENIN ===");
+        consolex.log("1. Mekanika Analitik");
+        consolex.log("2. Elektrodinamika");
+        consolex.log("3. Aplikasi Fisika Radiasi dalam Kesehatan");
+        consolex.log(""); // Memberi jarak kosong di akhir
+    });
+
+    // Aksi ketika tombol SELASA diklik
+    btnSelasa.addEventListener("click", () => {
+        consolex.log("=== JADWAL SELASA ===");
+        consolex.log("1. Elektrodinamika");
+        consolex.log("2. Komputasi Sistem Fisis");
+        consolex.log(""); 
+    });
+
+    // Aksi ketika tombol RABU diklik
+    btnRabu.addEventListener("click", () => {
+        consolex.log("=== JADWAL RABU ===");
+        consolex.log("1. Metodologi Penelitian");
+        consolex.log(""); 
+    });
+
+    // Aksi ketika tombol KAMIS diklik
+    btnKamis.addEventListener("click", () => {
+        consolex.log("=== JADWAL KAMIS ===");
+        consolex.log("1. Mekanika Analitik");
+        consolex.log(""); 
+    });
+
+    // Aksi tombol "Beri Jarak"
+    btnEnter.addEventListener("click", () => {
+        consolex.log("\n"); 
+    });
+
+  </script>
+
+</body>
+</html>
